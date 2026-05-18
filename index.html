@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>VanBerto's — Jogo da Reciclagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;overscroll-behavior:none;user-select:none;-webkit-user-select:none;}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(160deg,#d0f0ff 0%,#b8e8ff 40%,#c8f5e0 100%);min-height:100vh;overflow-x:hidden;touch-action:pan-y;}
+.floater{position:fixed;font-size:2rem;opacity:.22;pointer-events:none;animation:floatAcross linear infinite;z-index:0;}
+@keyframes floatAcross{from{transform:translateX(-180px) rotate(0deg)}to{transform:translateX(calc(100vw+180px)) rotate(360deg)}}
+/* HEADER */
+header{background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:3px solid rgba(255,255,255,.95);padding:.6rem 1rem .5rem;text-align:center;position:sticky;top:0;z-index:200;box-shadow:0 2px 18px rgba(0,0,0,.09);}
+header h1{font-family:'Fredoka One',cursive;font-size:clamp(1.2rem,4vw,1.9rem);color:#065f46;display:flex;align-items:center;justify-content:center;gap:.35rem;}
+.hd-robot{height:clamp(28px,4.5vw,40px);width:auto;filter:drop-shadow(0 0 6px #4ade80);animation:vbFloat 3s ease-in-out infinite;}
+@keyframes vbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+header p{font-size:clamp(.75rem,2vw,.92rem);color:#555;font-weight:800;margin-top:.1rem;}
+.score-bar{display:flex;justify-content:center;align-items:center;gap:.8rem;flex-wrap:wrap;background:rgba(255,255,255,.7);border-radius:50px;padding:.35rem 1.2rem;margin:.4rem auto 0;width:fit-content;font-family:'Fredoka One',cursive;font-size:.95rem;border:2px solid rgba(255,255,255,.9);}
+.score-ok{color:#16a34a;}.score-err{color:#dc2626;}
+/* DIFFICULTY SELECTOR */
+.diff-bar{display:flex;justify-content:center;gap:.5rem;margin:.35rem 0 0;flex-wrap:wrap;}
+.diff-btn{font-family:'Fredoka One',cursive;font-size:.82rem;border:2.5px solid transparent;border-radius:50px;padding:.22rem .9rem;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.6);}
+.diff-btn.active{background:#16a34a;color:white;border-color:#0f7a30;box-shadow:0 3px 10px rgba(22,163,74,.4);}
+.diff-btn:not(.active):hover{background:rgba(255,255,255,.9);}
+/* TIMER */
+.timer-bar{display:flex;justify-content:center;align-items:center;gap:.5rem;margin:.3rem 0 0;}
+.timer-pill{font-family:'Fredoka One',cursive;font-size:1rem;background:rgba(255,255,255,.7);border-radius:50px;padding:.2rem .9rem;color:#444;}
+.timer-pill.urgent{background:#fee2e2;color:#dc2626;animation:timerPulse .6s ease infinite alternate;}
+@keyframes timerPulse{from{transform:scale(1)}to{transform:scale(1.08)}}
+/* MAIN */
+main{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:.75rem .5rem 7rem;position:relative;z-index:1;}
+.note-banner{background:rgba(255,255,255,.75);border:2px solid rgba(255,255,255,.9);border-radius:14px;padding:.45rem .9rem;font-size:.75rem;font-weight:800;color:#555;text-align:center;width:100%;max-width:860px;}
+.note-banner span{display:inline-block;margin:0 .3rem;}
+/* BINS */
+.zones-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.55rem;width:100%;max-width:860px;}
+.bin-zone{border-radius:20px;border:3px solid;padding:.5rem .4rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;min-height:220px;transition:box-shadow .2s,transform .2s,border-color .2s;position:relative;}
+/* flying item arc animation */
+.fly-item{position:fixed;pointer-events:none;z-index:600;border-radius:12px;border:2.5px solid #0f172a;background:white;box-shadow:3px 3px 0 #0f172a;display:flex;align-items:center;justify-content:center;animation:flyArc var(--fly-dur,0.55s) cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes flyArc{
+  0%  {transform:translate(0,0) scale(1) rotate(0deg);opacity:1;}
+  40% {transform:translate(var(--fly-mx),var(--fly-my)) scale(1.15) rotate(var(--fly-rot));opacity:1;}
+  80% {transform:translate(var(--fly-ex),var(--fly-ey)) scale(0.6) rotate(calc(var(--fly-rot)*2));opacity:.85;}
+  100%{transform:translate(var(--fly-ex),var(--fly-ey)) scale(0) rotate(calc(var(--fly-rot)*2.5));opacity:0;}
+}
+/* lid open on bin during drop */
+.bin-zone.lid-open .bz-svg-wrap svg{animation:lidOpen .5s ease forwards;}
+@keyframes lidOpen{0%{transform:none}30%{transform:translateY(-4px) scaleY(1.04)}60%{transform:translateY(2px)}100%{transform:none}}
+.bz-blue  {background:linear-gradient(160deg,#dbeafe,#bfdbfe);border-color:#2563eb;}
+.bz-yellow{background:linear-gradient(160deg,#fef9c3,#fde68a);border-color:#d97706;}
+.bz-green {background:linear-gradient(160deg,#dcfce7,#bbf7d0);border-color:#16a34a;}
+.bz-black {background:linear-gradient(160deg,#e2e8f0,#cbd5e1);border-color:#475569;}
+.bz-orange{background:linear-gradient(160deg,#ffedd5,#fed7aa);border-color:#ea580c;}
+.bin-zone.drag-over{transform:scale(1.06);box-shadow:0 0 0 5px rgba(255,210,0,.85),0 8px 28px rgba(0,0,0,.18);}
+.bin-zone.correct-flash{animation:correctFlash .55s ease;}
+.bin-zone.wrong-flash  {animation:wrongFlash .55s ease;}
+.hint-flash{animation:hintFlash .8s ease 3!important;}
+.hint-arrow{position:absolute;top:-38px;left:50%;transform:translateX(-50%);font-size:1.6rem;animation:arrowBounce .5s ease infinite alternate;pointer-events:none;z-index:10;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));}
+@keyframes arrowBounce{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-8px)}}
+.bin-zone.hint-glow{box-shadow:0 0 0 4px #facc15,0 0 24px 8px rgba(250,204,21,.6)!important;animation:hintGlowPulse 0.7s ease infinite alternate;}
+@keyframes hintGlowPulse{from{box-shadow:0 0 0 4px #facc15,0 0 18px 6px rgba(250,204,21,.5);}to{box-shadow:0 0 0 6px #facc15,0 0 32px 14px rgba(250,204,21,.7);}}
+@keyframes correctFlash{0%,100%{filter:none}45%{filter:brightness(1.4) saturate(1.6)}}
+@keyframes wrongFlash  {0%,100%{filter:none}45%{filter:hue-rotate(180deg) brightness(.85)}}
+@keyframes hintFlash   {0%,100%{filter:none}30%,70%{filter:brightness(1.5) saturate(2) drop-shadow(0 0 10px gold)}}
+.bz-svg-wrap{width:100%;display:flex;justify-content:center;}
+.bz-svg-wrap svg{width:clamp(50px,9vw,76px);height:auto;}
+.bz-title{font-family:'Fredoka One',cursive;font-size:clamp(.65rem,1.8vw,.85rem);text-align:center;line-height:1.15;}
+.bz-blue   .bz-title{color:#1d4ed8;}.bz-yellow .bz-title{color:#92400e;}
+.bz-green  .bz-title{color:#15803d;}.bz-black  .bz-title{color:#1e293b;}
+.bz-orange .bz-title{color:#9a3412;}
+.bz-count{font-size:.62rem;font-weight:900;opacity:.65;}
+.bz-cards{display:flex;flex-wrap:wrap;gap:.28rem;justify-content:center;width:100%;min-height:54px;padding:.2rem;border-radius:10px;border:2px dashed rgba(0,0,0,.12);background:rgba(255,255,255,.35);transition:background .2s;}
+.bz-fill-wrap{width:100%;height:8px;background:rgba(0,0,0,.12);border-radius:50px;overflow:hidden;margin-top:.2rem;}
+.bz-fill-bar{height:100%;width:0%;border-radius:50px;transition:width .5s cubic-bezier(.34,1.56,.64,1);background:rgba(255,255,255,.7);}
+.bz-blue   .bz-fill-bar{background:#60a0ff;}
+.bz-yellow .bz-fill-bar{background:#ffd060;}
+.bz-green  .bz-fill-bar{background:#60d080;}
+.bz-black  .bz-fill-bar{background:#a0a0a0;}
+.bz-orange .bz-fill-bar{background:#ff9050;}
+.bin-zone.drag-over .bz-cards{background:rgba(255,255,255,.65);}
+.placed-card{background:white;border:2px solid #0f172a;border-radius:9px;padding:.2rem .3rem;display:flex;flex-direction:column;align-items:center;box-shadow:2px 2px 0 #0f172a;min-width:46px;text-align:center;animation:cardPop .4s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes cardPop{from{transform:scale(0) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+.placed-card .pc-icon{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.placed-card .pc-icon svg{width:100%;height:100%;}
+.placed-card .pc-name{font-size:.52rem;font-weight:900;color:#1e293b;line-height:1.1;margin-top:.1rem;}
+/* BANK */
+.bank-wrap{width:100%;max-width:860px;}
+.bank-label{text-align:center;font-size:.78rem;font-weight:900;color:#666;margin-bottom:.3rem;}
+.bank{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;padding:.65rem .4rem;background:rgba(255,255,255,.55);border-radius:20px;border:2px solid rgba(255,255,255,.85);backdrop-filter:blur(8px);min-height:62px;}
+/* CARDS */
+.card{background:white;border:3px solid #0f172a;border-radius:16px;padding:.45rem .55rem;display:flex;flex-direction:column;align-items:center;gap:.18rem;cursor:grab;box-shadow:4px 4px 0 #0f172a;transition:transform .15s,background .25s,border-color .25s,box-shadow .25s;min-width:70px;touch-action:none;min-height:80px;justify-content:center;}
+.card:active{cursor:grabbing;}
+.card.ghost{position:fixed;pointer-events:none;z-index:500;transform:rotate(6deg) scale(1.12);box-shadow:6px 10px 0 #0f172a,0 20px 40px rgba(0,0,0,.25);opacity:.95;}
+.card.wrong-shake{animation:wrongShake .5s ease;}
+.card.wrong-red{background:#fff0f0;border-color:#ee2222;box-shadow:4px 4px 0 #cc0000;}
+.card.wrong-red .card-name{color:#cc0000;}
+.card.wrong-red .card-emoji{filter:drop-shadow(0 0 4px #ff4444);}
+.card.entering{animation:cardBounceIn .5s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes cardBounceIn{
+  0%{transform:scale(0) translateY(30px);opacity:0;}
+  60%{transform:scale(1.12) translateY(-6px);opacity:1;}
+  100%{transform:scale(1) translateY(0);opacity:1;}
+}
+@keyframes wrongShake{0%,100%{transform:none}20%{transform:translateX(-10px) rotate(-2deg)}40%{transform:translateX(10px) rotate(2deg)}60%{transform:translateX(-8px)}80%{transform:translateX(6px)}}
+.card-svg{width:46px;height:46px;pointer-events:none;}
+.card-svg svg{width:100%;height:100%;}
+.card-emoji{font-size:2.5rem;line-height:1;pointer-events:none;text-align:center;}
+.card-name{font-size:clamp(.66rem,1.8vw,.8rem);font-weight:900;text-align:center;color:#1e293b;pointer-events:none;line-height:1.2;max-width:76px;}
+/* FEEDBACK TOAST */
+.feedback-toast{position:fixed;bottom:6rem;left:50%;transform:translateX(-50%) translateY(20px);background:white;border:3px solid #0f172a;border-radius:20px;padding:.7rem 1.3rem;font-size:.95rem;font-weight:900;text-align:center;box-shadow:4px 4px 0 #0f172a;min-width:260px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:400;}
+.feedback-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* EXPLANATION BANNER */
+.explain-bar{background:rgba(255,255,255,.88);border:2.5px solid #16a34a;border-radius:16px;padding:.5rem 1rem;font-size:.82rem;font-weight:800;color:#15803d;text-align:center;width:100%;max-width:860px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .3s;}
+.explain-bar.err{border-color:#dc2626;color:#b91c1c;background:rgba(255,240,240,.95);}
+/* LEARN MODE */
+#learn-overlay{display:none;position:fixed;inset:0;background:rgba(5,20,10,.8);z-index:700;justify-content:center;align-items:center;}
+#learn-overlay.show{display:flex;}
+.learn-card{background:white;border-radius:28px;padding:1.6rem 1.4rem;max-width:500px;width:94%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;}
+.learn-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin:1rem 0;}
+.learn-bin{border-radius:14px;padding:.6rem .4rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;cursor:pointer;transition:transform .15s;}
+.learn-bin:hover{transform:scale(1.05);}
+.learn-bin.bz-blue  {background:#dbeafe;}.learn-bin.bz-yellow{background:#fef9c3;}
+.learn-bin.bz-green {background:#dcfce7;}.learn-bin.bz-black {background:#e2e8f0;}
+.learn-bin.bz-orange{background:#ffedd5;}
+.learn-bin-title{font-family:'Fredoka One',cursive;font-size:.8rem;}
+.learn-bin.bz-blue   .learn-bin-title{color:#1d4ed8;}.learn-bin.bz-yellow .learn-bin-title{color:#92400e;}
+.learn-bin.bz-green  .learn-bin-title{color:#15803d;}.learn-bin.bz-black  .learn-bin-title{color:#1e293b;}
+.learn-bin.bz-orange .learn-bin-title{color:#9a3412;}
+.learn-examples{font-size:.72rem;font-weight:800;color:#666;line-height:1.4;}
+.learn-cols{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.4rem;}
+.learn-col{border-radius:12px;padding:.5rem .6rem;}
+.sim-col{background:#f0fdf4;border:1.5px solid #86efac;}
+.nao-col{background:#fff5f5;border:1.5px solid #fca5a5;}
+.learn-col-title{font-family:'Fredoka One',cursive;font-size:.82rem;margin-bottom:.3rem;text-align:center;}
+.sim-title{color:#15803d;}.nao-title{color:#dc2626;}
+.sim-item,.nao-item{display:block;font-size:.72rem;font-weight:800;line-height:1.7;text-align:left;padding-left:.9rem;position:relative;}
+.sim-item::before{content:'✓';position:absolute;left:0;color:#16a34a;font-weight:900;}
+.nao-item::before{content:'✗';position:absolute;left:0;color:#dc2626;font-weight:900;}
+.sim-item{color:#166534;}.nao-item{color:#991b1b;}
+.learn-fact{background:#fefce8;border:1.5px solid #fde047;border-radius:10px;padding:.4rem .6rem;font-size:.72rem;font-weight:800;color:#854d0e;font-style:italic;text-align:left;}
+/* ROBOT */
+.robot-wrap{position:fixed;bottom:.9rem;right:.8rem;z-index:300;display:flex;flex-direction:column;align-items:center;}
+.bubble{--bc:#dcfce7;background:linear-gradient(135deg,var(--bc),#fff);border:3px solid #0f172a;outline:2px solid #1e293b;outline-offset:-4px;border-radius:20px;padding:9px 11px 7px;box-shadow:4px 4px 0 #0f172a;font-family:"Comic Sans MS","Trebuchet MS",sans-serif;font-size:clamp(.72rem,2vw,.9rem);font-weight:bold;color:#0f172a;max-width:175px;min-width:120px;text-align:center;pointer-events:none;position:relative;opacity:0;transform:translateY(8px) scale(.88);transition:opacity .38s,transform .38s cubic-bezier(.34,1.56,.64,1);margin-bottom:6px;}
+.bubble::after{content:"";position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #0f172a;}
+.bubble::before{content:"";position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:13px solid var(--bc);z-index:1;}
+.bubble.show{opacity:1;transform:translateY(0) scale(1);}
+#robot-svg{width:clamp(65px,11vw,100px);cursor:pointer;animation:vbFloat 3s ease-in-out infinite;filter:drop-shadow(0 0 10px #4ade80);}
+.vb-eyelid{transform-origin:40px 23px;animation:vbBlink 5s ease-in-out infinite;}
+#vb-arm{transform-origin:65px 37px;animation:waveVB 1.5s ease-in-out infinite;}
+@keyframes vbBlink{0%,90%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+@keyframes waveVB{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(-18deg)}}
+/* ══ SPLASH SCREEN ══ */
+#splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#0ea5e9 0%,#22c55e 60%,#4ade80 100%);padding:1.5rem;text-align:center;overflow:hidden;}
+#splash.hide{animation:splashOut .45s ease forwards;pointer-events:none;}
+@keyframes splashOut{to{opacity:0;transform:scale(1.04);}}
+/* splash floating recycling icons background */
+.splash-floater{position:absolute;font-size:2.5rem;opacity:.13;pointer-events:none;animation:floatAcross linear infinite;}
+.splash-card{background:rgba(255,255,255,.95);border-radius:32px;padding:1.8rem 1.6rem 1.4rem;max-width:380px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;gap:.6rem;}
+.splash-robot{width:clamp(90px,22vw,130px);filter:drop-shadow(0 0 20px rgba(74,222,128,.7));animation:vbFloat 3s ease-in-out infinite;margin-bottom:-.3rem;}
+.splash-title{font-family:'Fredoka One',cursive;font-size:clamp(2rem,8vw,3rem);background:linear-gradient(135deg,#065f46,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+.splash-sub{font-size:clamp(.85rem,2.5vw,.98rem);font-weight:800;color:#555;margin-top:-.2rem;}
+/* difficulty picker on splash */
+.splash-diff-label{font-family:'Fredoka One',cursive;font-size:.88rem;color:#065f46;margin-top:.4rem;}
+.splash-diff-row{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;}
+.splash-diff-btn{font-family:'Fredoka One',cursive;font-size:.95rem;border:3px solid transparent;border-radius:50px;padding:.45rem 1.2rem;cursor:pointer;transition:all .2s;background:rgba(0,0,0,.06);color:#444;font-weight:700;}
+.splash-diff-btn.active{color:white;transform:scale(1.08);box-shadow:0 4px 14px rgba(0,0,0,.2);}
+.splash-diff-btn[data-d="easy"].active{background:linear-gradient(135deg,#22c55e,#16a34a);border-color:#15803d;}
+.splash-diff-btn[data-d="medium"].active{background:linear-gradient(135deg,#f59e0b,#d97706);border-color:#b45309;}
+.splash-diff-btn[data-d="hard"].active{background:linear-gradient(135deg,#ef4444,#dc2626);border-color:#991b1b;}
+.splash-diff-btn:not(.active):hover{background:rgba(0,0,0,.1);}
+/* diff descriptions */
+.splash-diff-desc{font-size:.78rem;font-weight:800;color:#666;min-height:1.2rem;}
+.splash-btn-play{font-family:'Fredoka One',cursive;font-size:1.5rem;background:linear-gradient(135deg,#22c55e,#0ea5e9);color:white;border:none;border-radius:60px;padding:.9rem 0;cursor:pointer;box-shadow:0 8px 28px rgba(34,197,94,.5);transition:transform .18s,box-shadow .18s;width:100%;margin-top:.3rem;}
+.splash-btn-play:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(34,197,94,.55);}
+.splash-btn-learn{font-family:'Fredoka One',cursive;font-size:1rem;background:transparent;color:#f59e0b;border:2.5px solid #f59e0b;border-radius:60px;padding:.55rem 0;cursor:pointer;transition:all .18s;width:100%;}
+.splash-btn-learn:hover{background:#f59e0b;color:white;}
+.splash-stats{font-family:'Fredoka One',cursive;font-size:.78rem;color:#6b7280;margin-top:-.2rem;}
+/* ══ MASCOT REACTIONS ══ */
+#robot-svg{width:clamp(65px,11vw,100px);cursor:pointer;animation:vbFloat 3s ease-in-out infinite;filter:drop-shadow(0 0 10px #4ade80);transition:filter .3s;}
+#robot-svg.react-happy{animation:vbJump .5s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 0 22px #22c55e);}
+#robot-svg.react-sad{animation:vbShake .4s ease;filter:drop-shadow(0 0 16px #ef4444);}
+#robot-svg.react-win{animation:vbSpin .7s ease;filter:drop-shadow(0 0 28px #f59e0b);}
+@keyframes vbJump{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-22px) scale(1.15,.9)}60%{transform:translateY(-28px) scale(.9,1.1)}80%{transform:translateY(-4px) scale(1.05,.97)}100%{transform:translateY(0) scale(1)}}
+@keyframes vbShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}40%{transform:rotate(10deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(6deg)}}
+@keyframes vbSpin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+/* ══ BIN CHALLENGE MODE ══ */
+.challenge-bar{display:flex;justify-content:center;align-items:center;gap:.5rem;flex-wrap:wrap;margin:.3rem 0 0;}
+.chall-btn{font-family:'Fredoka One',cursive;font-size:.78rem;border:2.5px solid transparent;border-radius:50px;padding:.2rem .75rem;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.55);color:#444;}
+.chall-btn.active{color:white;border-color:rgba(0,0,0,.2);box-shadow:0 3px 10px rgba(0,0,0,.2);}
+.chall-btn[data-b="all"].active{background:#065f46;}
+.chall-btn[data-b="blue"].active{background:#2563eb;}
+.chall-btn[data-b="yellow"].active{background:#d97706;}
+.chall-btn[data-b="green"].active{background:#16a34a;}
+.chall-btn[data-b="black"].active{background:#475569;}
+.chall-btn[data-b="orange"].active{background:#ea580c;}
+.chall-btn:not(.active):hover{background:rgba(255,255,255,.88);}
+/* WIN */
+#win-overlay{display:none;position:fixed;inset:0;background:rgba(5,20,10,.82);z-index:800;justify-content:center;align-items:center;}
+#win-overlay.show{display:flex;}
+.win-card{background:white;border-radius:28px;padding:1.6rem 1.3rem;text-align:center;max-width:480px;width:94%;animation:popIn .6s cubic-bezier(.34,1.56,.64,1) both;box-shadow:0 24px 80px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.win-icons{font-size:2.6rem;letter-spacing:.3rem;animation:iconBounce 1s ease infinite alternate;}
+@keyframes iconBounce{from{transform:scale(1)}to{transform:scale(1.12)}}
+.win-parabens{font-family:'Fredoka One',cursive;font-size:2.4rem;background:linear-gradient(135deg,#f59e0b,#22c55e,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:.1rem 0 .2rem;}
+.win-stars{font-size:2.4rem;letter-spacing:.4rem;margin:.1rem 0;}
+.win-sub{font-size:.88rem;font-weight:800;color:#555;margin-bottom:.3rem;}
+.win-score{font-family:'Fredoka One',cursive;font-size:1.2rem;color:#d97706;margin:.2rem 0;}
+.win-bins{display:flex;justify-content:center;gap:.4rem;flex-wrap:wrap;margin:.6rem 0 .3rem;}
+.win-bin{border-radius:12px;padding:.4rem .5rem;font-family:'Fredoka One',cursive;font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:60px;}
+.win-bin.bz-blue  {background:#dbeafe;color:#1d4ed8;}.win-bin.bz-yellow{background:#fef9c3;color:#92400e;}
+.win-bin.bz-green {background:#dcfce7;color:#15803d;}.win-bin.bz-black {background:#e2e8f0;color:#1e293b;}
+.win-bin.bz-orange{background:#ffedd5;color:#9a3412;}
+.win-mistakes{margin:.5rem 0;text-align:left;font-size:.78rem;font-weight:800;}
+.win-mistakes h4{color:#dc2626;margin-bottom:.3rem;text-align:center;}
+.win-mistake-item{display:flex;align-items:center;gap:.4rem;background:#fff5f5;border-radius:10px;padding:.25rem .5rem;margin:.2rem 0;border:1.5px solid #fecaca;}
+.win-fact{background:#f0fdf4;border:2px solid #86efac;border-radius:14px;padding:.5rem .8rem;font-size:.78rem;font-weight:800;color:#15803d;margin:.4rem 0;text-align:center;}
+.btn-replay,.btn-learn{border:none;border-radius:50px;padding:.8rem 2rem;font-family:'Fredoka One',cursive;font-size:1.1rem;cursor:pointer;transition:transform .2s;margin:.3rem .2rem;}
+.btn-replay{background:linear-gradient(135deg,#22c55e,#0ea5e9);color:white;box-shadow:0 6px 22px rgba(34,197,94,.4);}
+.btn-learn{background:linear-gradient(135deg,#f59e0b,#f97316);color:white;box-shadow:0 6px 22px rgba(245,158,11,.4);}
+.btn-replay:hover,.btn-learn:hover{transform:translateY(-3px);}
+#mute-btn{position:fixed;top:.7rem;right:.7rem;z-index:300;background:rgba(255,255,255,.88);border:2.5px solid rgba(0,0,0,.14);border-radius:50%;width:44px;height:44px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.13);}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:900;}
+.signature{font-size:.72rem;color:#6ee7b7;font-weight:700;text-align:center;width:100%;}
+.stats-bar{display:none;justify-content:center;align-items:center;gap:.9rem;flex-wrap:wrap;background:rgba(255,255,255,.6);border-radius:50px;padding:.25rem 1rem;margin:.3rem auto 0;width:fit-content;font-family:'Fredoka One',cursive;font-size:.78rem;color:#444;border:1.5px solid rgba(255,255,255,.85);}
+@media(max-width:600px){
+  .zones-grid{grid-template-columns:repeat(3,1fr);gap:.35rem;}
+  .bin-zone{min-height:160px;}
+  .bz-title{font-size:.62rem;}
+  .bz-svg-wrap svg{width:44px;}
+  .card{min-width:68px;padding:.42rem .5rem;}
+  .card-svg{width:42px;height:42px;}
+  .card-name{font-size:.65rem;}
+  .learn-grid{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:400px){
+  .zones-grid{grid-template-columns:repeat(2,1fr);gap:.28rem;}
+  .bin-zone{min-height:140px;}
+  .bz-title{font-size:.58rem;}
+  .bz-svg-wrap svg{width:38px;}
+  .card{min-width:74px;padding:.5rem .55rem;border-radius:14px;}
+  .card-svg{width:46px;height:46px;}
+  .card-name{font-size:.68rem;}
+  .learn-grid{grid-template-columns:repeat(2,1fr);}
+  .bank{gap:.55rem;padding:.7rem .5rem;}
+}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<button id="mute-btn" onclick="toggleMute()" aria-label="Som">🔊</button>
+<div class="floater" style="top:8%;animation-duration:30s;animation-delay:-5s">♻️</div>
+<div class="floater" style="top:45%;font-size:1.5rem;animation-duration:44s;animation-delay:-20s">🌿</div>
+<div class="floater" style="top:70%;font-size:1.8rem;animation-duration:36s;animation-delay:-12s">🌍</div>
+
+<div id="splash">
+  <!-- background floaters -->
+  <div class="splash-floater" style="top:5%;left:5%;animation-duration:28s;animation-delay:-3s">♻️</div>
+  <div class="splash-floater" style="top:15%;right:8%;animation-duration:38s;animation-delay:-14s;font-size:2rem">🌍</div>
+  <div class="splash-floater" style="bottom:12%;left:10%;animation-duration:32s;animation-delay:-8s;font-size:1.8rem">🌿</div>
+  <div class="splash-floater" style="bottom:20%;right:6%;animation-duration:42s;animation-delay:-20s">♻️</div>
+
+  <div class="splash-card">
+    <!-- VanBerto -->
+    <svg class="splash-robot" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e5f2ff"/><stop offset="100%" stop-color="#bfdbfe"/></linearGradient>
+        <linearGradient id="svg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
+      </defs>
+      <circle cx="40" cy="40" r="34" fill="rgba(56,189,248,0.18)"/>
+      <rect x="18" y="30" width="44" height="32" rx="14" fill="url(#sbg)"/>
+      <circle cx="40" cy="46" r="7" fill="#9ca3af"/>
+      <rect x="22" y="10" width="36" height="26" rx="13" fill="url(#sbg)"/>
+      <rect x="26" y="15" width="28" height="16" rx="8" fill="url(#svg2)"/>
+      <circle cx="33" cy="23" r="2.5" fill="#0f172a"/><circle cx="47" cy="23" r="2.5" fill="#0f172a"/>
+      <circle cx="34.2" cy="21.5" r="1" fill="white" opacity=".8"/><circle cx="48.2" cy="21.5" r="1" fill="white" opacity=".8"/>
+      <line x1="40" y1="10" x2="40" y2="4" stroke="#38bdf8" stroke-width="2"/><circle cx="40" cy="3" r="2.5" fill="#38bdf8"/>
+      <rect x="12" y="34" width="6" height="20" rx="3" fill="#e5e7eb"/>
+      <rect x="62" y="34" width="6" height="20" rx="3" fill="#e5e7eb"/>
+      <rect x="22" y="58" width="12" height="8" rx="3" fill="#0f172a"/><rect x="46" y="58" width="12" height="8" rx="3" fill="#0f172a"/>
+    </svg>
+
+    <div class="splash-title">♻️ VanBerto's</div>
+    <div class="splash-sub">O jogo da reciclagem da Professora Vanda!</div>
+
+    <!-- difficulty selector -->
+    <div class="splash-diff-label">Escolhe a dificuldade:</div>
+    <div class="splash-diff-row">
+      <button class="splash-diff-btn active" data-d="easy"   onclick="setSplashDiff('easy')">🌱 Fácil</button>
+      <button class="splash-diff-btn"        data-d="medium" onclick="setSplashDiff('medium')">⚡ Médio</button>
+      <button class="splash-diff-btn"        data-d="hard"   onclick="setSplashDiff('hard')">🔥 Difícil</button>
+    </div>
+    <div class="splash-diff-desc" id="splash-diff-desc">10 resíduos • sem limite de tempo</div>
+
+    <button class="splash-btn-play" onclick="startFromSplash()">▶ Jogar!</button>
+    <button class="splash-btn-learn" onclick="learnFromSplash()">📚 Aprender primeiro</button>
+    <div class="splash-stats" id="splash-stats"></div>
+  </div>
+</div>
+
+<header>
+  <h1>
+    <svg class="hd-robot" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="hbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e5f2ff"/><stop offset="100%" stop-color="#bfdbfe"/></linearGradient>
+        <linearGradient id="hvg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
+      </defs>
+      <circle cx="40" cy="40" r="34" fill="rgba(56,189,248,0.22)"/>
+      <rect x="18" y="30" width="44" height="32" rx="14" fill="url(#hbg)"/>
+      <circle cx="40" cy="46" r="7" fill="#9ca3af"/>
+      <rect x="22" y="10" width="36" height="26" rx="13" fill="url(#hbg)"/>
+      <rect x="26" y="15" width="28" height="16" rx="8" fill="url(#hvg)"/>
+      <circle cx="33" cy="23" r="2.5" fill="#0f172a"/><circle cx="47" cy="23" r="2.5" fill="#0f172a"/>
+      <circle cx="34.2" cy="21.5" r="1" fill="white" opacity=".8"/><circle cx="48.2" cy="21.5" r="1" fill="white" opacity=".8"/>
+      <line x1="40" y1="10" x2="40" y2="4" stroke="#38bdf8" stroke-width="2"/><circle cx="40" cy="3" r="2.5" fill="#38bdf8"/>
+      <rect x="12" y="34" width="6" height="20" rx="3" fill="#e5e7eb"/>
+      <rect x="62" y="34" width="6" height="20" rx="3" fill="#e5e7eb"/>
+      <rect x="22" y="58" width="12" height="8" rx="3" fill="#0f172a"/><rect x="46" y="58" width="12" height="8" rx="3" fill="#0f172a"/>
+    </svg>
+    VanBerto's
+  </h1>
+  <p>Arrasta cada resíduo para o ecoponto certo!</p>
+  <div class="score-bar">
+    <span>✅ <span class="score-ok" id="sOk">0</span></span>
+    <span>❌ <span class="score-err" id="sErr">0</span></span>
+    <span>⭐ <span id="sPts">0</span> pts</span>
+  </div>
+  <div class="diff-bar">
+    <button class="btn-learn" style="font-size:.82rem;padding:.22rem .9rem;border-radius:50px;border:2.5px solid #d97706;background:linear-gradient(135deg,#f59e0b,#f97316);color:white;font-family:'Fredoka One',cursive;cursor:pointer;box-shadow:0 3px 10px rgba(245,158,11,.35);" onclick="showLearn()">📚 Aprender</button>
+    <button class="diff-btn active" onclick="setDiff('easy')"   id="d-easy">🟢 Fácil</button>
+    <button class="diff-btn"        onclick="setDiff('medium')" id="d-medium">🟡 Médio</button>
+    <button class="diff-btn"        onclick="setDiff('hard')"   id="d-hard">🔴 Difícil</button>
+  </div>
+  <div class="timer-bar">
+    <div class="timer-pill" id="timer-pill">⏱️ Sem limite</div>
+  </div>
+  <div class="challenge-bar" id="challenge-bar">
+    <span style="font-family:'Fredoka One',cursive;font-size:.75rem;color:#666;">Ecoponto:</span>
+    <button class="chall-btn active" data-b="all"    onclick="setBinFocus('all')">Todos</button>
+    <button class="chall-btn" data-b="blue"   onclick="setBinFocus('blue')">🔵 Azul</button>
+    <button class="chall-btn" data-b="yellow" onclick="setBinFocus('yellow')">🟡 Amarelo</button>
+    <button class="chall-btn" data-b="green"  onclick="setBinFocus('green')">🟢 Verde</button>
+    <button class="chall-btn" data-b="black"  onclick="setBinFocus('black')">⚫ Preto</button>
+    <button class="chall-btn" data-b="orange" onclick="setBinFocus('orange')">🟠 Pilhão</button>
+  </div>
+  <div class="stats-bar" id="stats-bar"></div>
+</header>
+
+<main>
+  <div class="note-banner">
+    <span><svg viewBox="0 0 14 14" width="14" height="14" style="vertical-align:middle;margin-right:3px"><rect width="14" height="14" rx="3" fill="#2563eb"/></svg>Azul = Papel</span><span><svg viewBox="0 0 14 14" width="14" height="14" style="vertical-align:middle;margin-right:3px"><rect width="14" height="14" rx="3" fill="#d97706"/></svg>Amarelo = Embalagens</span>
+    <span><svg viewBox="0 0 14 14" width="14" height="14" style="vertical-align:middle;margin-right:3px"><rect width="14" height="14" rx="3" fill="#16a34a"/></svg>Verde = Vidro</span><span><svg viewBox="0 0 14 14" width="14" height="14" style="vertical-align:middle;margin-right:3px"><rect width="14" height="14" rx="3" fill="#475569"/></svg>Preto = Lixo</span><span><svg viewBox="0 0 14 14" width="14" height="14" style="vertical-align:middle;margin-right:3px"><rect width="14" height="14" rx="3" fill="#ea580c"/></svg>Laranja = Pilhão</span>
+  </div>
+  <div class="zones-grid" id="zones-grid"></div>
+  <div class="explain-bar" id="explain-bar">💡 Arrasta um resíduo para o ecoponto certo!</div>
+  <div class="bank-wrap">
+    <div class="bank-label">Arrasta cada resíduo para o ecoponto certo ↓</div>
+    <div class="bank" id="bank"></div>
+  </div>
+  <p class="signature">© Professora Vanda Várzea</p>
+</main>
+
+<div class="feedback-toast" id="feedback-toast"></div>
+
+<!-- LEARN OVERLAY -->
+<div id="learn-overlay">
+  <div class="learn-card">
+    <div style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#065f46;margin-bottom:.5rem">📚 Modo Aprender</div>
+    <div style="font-size:.82rem;font-weight:800;color:#555;margin-bottom:.5rem">Clica em cada ecoponto para ver o que vai lá!</div>
+    <div class="learn-grid" id="learn-grid"></div>
+    <div id="learn-detail" style="min-height:80px;background:transparent;border-radius:14px;padding:.3rem;font-size:.8rem;font-weight:800;color:#15803d;margin-bottom:.6rem;"></div>
+    <button class="btn-replay" onclick="closeLearн()">▶ Jogar agora!</button>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-icons" id="wIcons">🎉🏆🎊</div>
+    <div class="win-parabens">PARABÉNS!</div>
+    <div class="win-stars" id="wStars">⭐⭐⭐</div>
+    <div class="win-sub" id="wSub">Separaste todos os resíduos!</div>
+    <div class="win-score" id="wScore">⭐ 0 pontos</div>
+    <div class="win-fact" id="wFact"></div>
+    <div style="font-size:.72rem;font-weight:900;color:#888;text-transform:uppercase;margin:.4rem 0 .15rem;">Resultado por ecoponto</div>
+    <div class="win-bins" id="wBins"></div>
+    <div class="win-mistakes" id="wMistakes"></div>
+    <button class="btn-learn" onclick="showLearn()">📚 Aprender</button>
+    <button class="btn-replay" id="btnReplay">▶ Jogar outra vez!</button>
+  </div>
+</div>
+
+<!-- ROBOT -->
+<div class="robot-wrap">
+  <div class="bubble" id="bubble">Olá! 😊</div>
+  <svg id="robot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="rbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e5f2ff"/><stop offset="100%" stop-color="#bfdbfe"/></linearGradient>
+      <linearGradient id="rvg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
+    </defs>
+    <circle cx="40" cy="40" r="34" fill="rgba(56,189,248,0.28)"/>
+    <rect x="18" y="30" width="44" height="32" rx="14" fill="url(#rbg)"/>
+    <circle cx="40" cy="46" r="7" fill="#9ca3af"/>
+    <rect x="22" y="10" width="36" height="26" rx="13" fill="url(#rbg)"/>
+    <rect x="26" y="15" width="28" height="16" rx="8" fill="url(#rvg)"/>
+    <rect class="vb-eyelid" x="26" y="15" width="28" height="16" rx="8" fill="#e5f2ff" opacity=".9"/>
+    <circle cx="33" cy="23" r="2.5" fill="#0f172a"/><circle cx="47" cy="23" r="2.5" fill="#0f172a"/>
+    <circle cx="34.2" cy="21.5" r="1" fill="white" opacity=".8"/><circle cx="48.2" cy="21.5" r="1" fill="white" opacity=".8"/>
+    <line x1="40" y1="10" x2="40" y2="4" stroke="#38bdf8" stroke-width="2"/><circle cx="40" cy="3" r="2.5" fill="#38bdf8"/>
+    <rect x="12" y="34" width="6" height="20" rx="3" fill="#e5e7eb"/>
+    <rect id="vb-arm" x="62" y="34" width="6" height="20" rx="3" fill="#e5e7eb"/>
+    <rect x="22" y="58" width="12" height="8" rx="3" fill="#0f172a"/><rect x="46" y="58" width="12" height="8" rx="3" fill="#0f172a"/>
+    <path id="vb-mouth" d="M30,32 Q40,37 50,32" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" opacity="0"/>
+  </svg>
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════ AUDIO ══════════════════════ */
+let ACX=null, muted=false;
+function ensureAudio(){if(!ACX)ACX=new(window.AudioContext||window.webkitAudioContext)();if(ACX.state==='suspended')ACX.resume();}
+function tone(f,tp,t,d,v){try{const o=ACX.createOscillator(),g=ACX.createGain();o.connect(g);g.connect(ACX.destination);o.type=tp;o.frequency.value=f;g.gain.setValueAtTime(v,ACX.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ACX.currentTime+t+d);o.start(ACX.currentTime+t);o.stop(ACX.currentTime+t+d+.05);}catch(e){}}
+
+/* noise burst helper — for paper/glass/crinkle sounds */
+function noise(t,d,v,bandLow,bandHigh){
+  try{
+    const buf=ACX.createBuffer(1,ACX.sampleRate*d,ACX.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1);
+    const src=ACX.createBufferSource();
+    src.buffer=buf;
+    const filt=ACX.createBiquadFilter();
+    filt.type='bandpass';
+    filt.frequency.value=(bandLow+bandHigh)/2;
+    filt.Q.value=0.8;
+    const g=ACX.createGain();
+    g.gain.setValueAtTime(v,ACX.currentTime+t);
+    g.gain.exponentialRampToValueAtTime(0.001,ACX.currentTime+t+d);
+    src.connect(filt);filt.connect(g);g.connect(ACX.destination);
+    src.start(ACX.currentTime+t);src.stop(ACX.currentTime+t+d+0.05);
+  }catch(e){}
+}
+
+/* ── MATERIAL SOUNDS ── */
+// 📄 Paper: soft whoosh + low crinkle noise
+function sndPaper(){
+  ensureAudio();
+  noise(0, .12, .18, 200, 800);   // paper crinkle
+  noise(.06, .18, .12, 100, 400); // soft whoosh
+  tone(180,'sine',.04,.15,.08);
+}
+// 📦 Cardboard: deeper thud + crinkle
+function sndCardboard(){
+  ensureAudio();
+  tone(80,'sine',0,.18,.4);
+  tone(60,'sine',.05,.2,.3);
+  noise(0,.1,.15,80,300);
+}
+// 🥤 Metal can: bright metallic clink
+function sndMetal(){
+  ensureAudio();
+  tone(900,'sine',0,.015,.5);
+  tone(1400,'sine',0,.008,.35);
+  tone(600,'sine',.012,.12,.25);
+  tone(900,'sine',.025,.08,.15);
+}
+// 🍾 Glass: bright high ping + resonance
+function sndGlass(){
+  ensureAudio();
+  tone(1200,'sine',0,.012,.6);
+  tone(1800,'sine',0,.006,.4);
+  tone(1200,'sine',.01,.6,.3);   // long ring decay
+  tone(900,'sine',.01,.5,.15);
+}
+// 🛍️ Plastic: crinkly mid noise
+function sndPlastic(){
+  ensureAudio();
+  noise(0,.08,.22,400,2000);
+  noise(.05,.1,.18,300,1500);
+  tone(300,'sawtooth',.02,.06,.08);
+}
+// 🗑️ Generic thud for black bin
+function sndThud(){
+  ensureAudio();
+  tone(80,'sine',0,.06,.6);
+  tone(60,'sine',.03,.12,.4);
+  noise(0,.08,.12,50,200);
+}
+// 🔋 Battery click — short sharp
+function sndBattery(){
+  ensureAudio();
+  tone(400,'square',0,.015,.5);
+  tone(300,'square',.015,.015,.4);
+  tone(500,'sine',.03,.08,.3);
+}
+
+/* map item key → material sound */
+const MAT_SND={
+  jornal:sndPaper, folha_papel:sndPaper, revista:sndPaper,
+  caderno:sndPaper, envelope:sndPaper, livro_velho:sndCardboard,
+  saco_papel:sndPaper, caixa_cartao:sndCardboard,
+  lata_sumo:sndMetal, lata_conserva:sndMetal, lata_tinta:sndMetal,
+  garrafa_vidro:sndGlass, boiao_vidro:sndGlass, frasco_mel:sndGlass,
+  garrafa_vinho:sndGlass, frasco_vidro_pequeno:sndGlass,
+  frasquinho_perfume:sndGlass, garrafa_cerveja:sndGlass,
+  garrafa_plastico:sndPlastic, frasco_shampoo:sndPlastic,
+  saco_plastico:sndPlastic, pacote_sumo:sndCardboard,
+  garrafa_agua:sndPlastic, embalagem_plastico:sndPlastic,
+  frasco_comprimidos:sndPlastic, balde_plastico:sndPlastic,
+  copo_iogurte:sndPlastic, garrafa_oleo:sndPlastic,
+  caixa_leite:sndCardboard, copo_plastico:sndPlastic,
+  tabuleiro_plastico:sndPlastic,
+  restos_comida:sndThud, casca_banana:sndThud,
+  lapis_partido:sndThud, penso_rapido:sndThud,
+  papel_higienico:sndPaper, escova_dentes:sndThud,
+  lampada:sndGlass, esponja:sndThud, chinelo:sndThud,
+  espinha_peixe:sndThud, sapato_velho:sndThud,
+  rolo_cozinha:sndPaper, frigorifico_velho:sndThud,
+  fralda_usada:sndThud, chiclete:sndThud, guardanapo:sndPaper,
+  pilha:sndBattery, bateria:sndBattery, pilha_recarregavel:sndBattery,
+};
+function sndItem(key){ if(muted)return; ensureAudio(); const fn=MAT_SND[key]; if(fn)fn(); }
+
+function sndOk() {if(muted)return;ensureAudio();[[523,.05],[659,.15],[784,.25],[1047,.38]].forEach(([f,t])=>tone(f,'sine',t,.4,.35));}
+function sndErr(){if(muted)return;ensureAudio();tone(180,'sawtooth',0,.15,.3);tone(150,'sawtooth',.12,.2,.25);}
+function sndWin(){if(muted)return;ensureAudio();[[523,.05],[659,.12],[784,.2],[1047,.3],[1318,.42],[1568,.56],[2093,.72]].forEach(([f,t])=>tone(f,'triangle',t,.5,.4));}
+function sndBin(bin){if(muted)return;ensureAudio();
+  const map={blue:[400,'sine'],yellow:[500,'sine'],green:[350,'sine'],black:[200,'triangle'],orange:[450,'sine']};
+  const[f,tp]=map[bin]||[440,'sine'];tone(f,tp,0,.18,.28);tone(f*1.5,tp,.1,.15,.2);}
+
+let ptVoice=null;
+function loadVoice(){
+  const vs=speechSynthesis.getVoices();
+  ptVoice=vs.find(v=>v.lang==='pt-PT')
+    ||vs.find(v=>v.lang.startsWith('pt')&&!v.lang.includes('BR'))
+    ||vs.find(v=>v.lang.startsWith('pt'))
+    ||null;
+}
+speechSynthesis.addEventListener('voiceschanged',loadVoice);
+// retry a few times — some browsers load voices async
+setTimeout(loadVoice,500);setTimeout(loadVoice,1500);setTimeout(loadVoice,3000);
+loadVoice();
+function say(txt,rate=.82){
+  try{
+    if(muted)return;
+    speechSynthesis.cancel();
+    // normalise for better PT pronunciation
+    const norm = txt
+      .replace(/♻️/g,'')
+      .replace(/✅/g,'').replace(/❌/g,'')
+      .replace(/🌟|🎉|👏|🌍|💡|⭐/g,'')
+      .replace(/Ops!/gi,'Oops!')
+      .replace(/pt-PT/gi,'português de Portugal')
+      .replace(/AA/g,'A A').replace(/AAA/g,'A A A')
+      .trim();
+    const u=new SpeechSynthesisUtterance(norm);
+    // force pt-PT: try to find European Portuguese voice
+    const voices=speechSynthesis.getVoices();
+    const best=voices.find(v=>v.lang==='pt-PT')
+      || voices.find(v=>v.lang.startsWith('pt')&&!v.lang.includes('BR'))
+      || voices.find(v=>v.lang.startsWith('pt'))
+      || null;
+    if(best){u.voice=best;u.lang=best.lang;}
+    else{u.lang='pt-PT';}
+    u.rate=rate;
+    u.pitch=1.1;
+    u.volume=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function toggleMute(){muted=!muted;document.getElementById('mute-btn').textContent=muted?'🔇':'🔊';if(muted)try{speechSynthesis.cancel();}catch(e){}}
+
+/* ══════════════════════ DATA ══════════════════════ */
+const BINS=[
+  {id:'blue',  cls:'bz-blue',  c1:'#2979e0',c2:'#5ba3ff',dk:'#1a4cb8',wh:'#1a3a8a',label:'PAPEL',     title:'Papel',     desc:'Papel e Cartão',
+   examples:['Caixas de cartão','Revistas e jornais','Papel de escrita e impressão','Cadernos','Envelopes','Livros velhos','Sacos de papel'],
+   nao:['Papel e cartão sujos de tinta ou gordura','Papel vegetal','Papel plastificado','Fraldas','Sacos de plástico','Papel higiénico'],
+   fact:'Uma tonelada de papel reciclado poupa 17 árvores e 26.000 litros de água!'},
+  {id:'yellow',cls:'bz-yellow',c1:'#e08c00',c2:'#f5b830',dk:'#a05e00',wh:'#7a4400',label:'EMBALA.',   title:'Embalagens', desc:'Plástico e Metal',
+   examples:['Sacos de plástico','Embalagens de plástico','Pacotes de sumo e leite','Latas de metal','Garrafas de plástico','Frascos de shampoo','Tabuleiros de plástico'],
+   nao:['Eletrodomésticos','Pilhas e baterias','Outros plásticos que não sejam embalagens','Papel e cartão','Vidro'],
+   fact:'Cada lata de alumínio reciclada poupa energia suficiente para um computador funcionar 3 horas!'},
+  {id:'green', cls:'bz-green', c1:'#1a9e48',c2:'#2ec860',dk:'#0f6630',wh:'#0a4020',label:'VIDRO',     title:'Vidro',      desc:'Garrafas e Frascos',
+   examples:['Garrafas de vidro','Frascos de vidro','Boiões','Garrafas de vinho','Garrafas de cerveja','Frascos de perfume'],
+   nao:['Loiças e cerâmicas','Vidro de janelas','Lâmpadas','Espelhos e cristais','Copos de vidro doméstico'],
+   fact:'O vidro pode ser reciclado infinitamente! Uma garrafa demora 4.000 anos a degradar na natureza.'},
+  {id:'black', cls:'bz-black', c1:'#3d3d3d',c2:'#555555',dk:'#1a1a1a',wh:'#444',   label:'LIXO',      title:'Lixo Comum', desc:'Restos não recicláveis',
+   examples:['Restos de comida','Papel higiénico usado','Fraldas usadas','Esponjas','Escovas de dentes','Guardanapos usados','Pastilha elástica'],
+   nao:['Pilhas e baterias (vão para o pilhão)','Embalagens de plástico (vão para o amarelo)','Papel e cartão (vão para o azul)','Vidro (vai para o verde)'],
+   fact:'Reduzir o lixo comum começa por comprar menos embalagens e fazer compostagem com os restos de comida!'},
+  {id:'orange',cls:'bz-orange',c1:'#e86010',c2:'#f88a3a',dk:'#a03808',wh:'#7a2a00',label:'PILHÃO',    title:'Pilhão',     desc:'Pilhas e Baterias',
+   examples:['Pilhas AA e AAA','Pilhas recarregáveis','Baterias de automóvel','Baterias de telemóvel','Baterias de computador'],
+   nao:['Pequenos eletrodomésticos (vão para o ecocentro)','Pilhas incorporadas em aparelhos','Lâmpadas'],
+   fact:'As pilhas contêm metais pesados tóxicos como mercúrio e cádmio. Nunca as deites no lixo comum!'},
+];
+
+const EXPLANATIONS={
+  jornal:'O jornal é feito de papel e vai para o ecoponto azul! ♻️',
+  caixa_cartao:'A caixa de cartão é reciclável no ecoponto azul! 📦',
+  folha_papel:'O papel de escrita vai sempre para o azul! 📄',
+  caderno:'Cadernos velhos são papel e vão para o azul! 📒',
+  revista:'As revistas são feitas de papel! Vão para o azul. 📰',
+  envelope:'Envelopes de papel vão para o ecoponto azul! ✉️',
+  livro_velho:'Livros velhos são papel e cartão — ecoponto azul! 📗',
+  saco_papel:'Sacos de papel vão para o ecoponto azul! 🛍️',
+  lata_sumo:'As latas de alumínio são metal — ecoponto amarelo! 🥤',
+  garrafa_plastico:'Garrafas de plástico vão para o amarelo — são embalagens! 💧',
+  frasco_shampoo:'Frascos de plástico são embalagens — ecoponto amarelo! 🧴',
+  saco_plastico:'Sacos de plástico vão para o ecoponto amarelo! 🛍️',
+  lata_conserva:'Latas de metal vão para o ecoponto amarelo! 🥫',
+  pacote_sumo:'Pacotes de cartão plastificado vão para o amarelo! 🧃',
+  garrafa_agua:'Garrafas de plástico vão para o ecoponto amarelo! 💧',
+  embalagem_plastico:'Embalagens plásticas vão para o amarelo! 📦',
+  frasco_comprimidos:'Frascos de plástico são embalagens — ecoponto amarelo! 💊',
+  balde_plastico:'Baldes de plástico são embalagens — ecoponto amarelo! 🪣',
+  copo_iogurte:'Copos de plástico/iogurte vão para o amarelo! 🥛',
+  garrafa_oleo:'Garrafas de plástico vão para o ecoponto amarelo! 🫙',
+  caixa_leite:'A caixa de leite é uma embalagem — ecoponto amarelo! 🥛',
+  copo_plastico:'Copos de plástico vão para o ecoponto amarelo! 🥤',
+  tabuleiro_plastico:'Tabuleiros de plástico são embalagens — amarelo! 🥡',
+  lata_tinta:'Latas de metal vazias vão para o amarelo! 🪣',
+  garrafa_vidro:'Garrafas de vidro vão para o ecoponto verde! 🍾',
+  boiao_vidro:'Boiões de vidro vão para o ecoponto verde! 🫙',
+  frasco_mel:'Frascos de vidro vão para o ecoponto verde! 🫙',
+  garrafa_vinho:'Garrafas de vinho são de vidro — ecoponto verde! 🍷',
+  frasco_vidro_pequeno:'Frascos de vidro vão para o ecoponto verde! 🫙',
+  frasquinho_perfume:'Frascos de perfume são de vidro — ecoponto verde! 🌸',
+  garrafa_cerveja:'Garrafas de cerveja são de vidro — ecoponto verde! 🍺',
+  restos_comida:'Restos de comida não são recicláveis — vão para o lixo comum. ⚫',
+  casca_banana:'Cascas de fruta são restos orgânicos — lixo comum. 🍌',
+  lapis_partido:'Lápis partidos não são recicláveis — lixo comum. ✏️',
+  penso_rapido:'Pensos rápidos são resíduos de saúde — lixo comum. 🩹',
+  papel_higienico:'Papel higiénico usado não é reciclável — lixo comum! 🧻',
+  escova_dentes:'Escovas de dentes velhas vão para o lixo comum. 🪥',
+  lampada:'Lâmpadas vão para o lixo comum ou ecocentro. 💡',
+  esponja:'Esponjas usadas não são recicláveis — lixo comum. 🧽',
+  chinelo:'Chinelos velhos vão para o lixo comum. 🩴',
+  espinha_peixe:'Restos de peixe são orgânicos — lixo comum. 🐟',
+  sapato_velho:'Sapatos velhos vão para o lixo ou para reutilização. 👟',
+  rolo_cozinha:'Papel de cozinha usado vai para o lixo comum. 🧻',
+  frigorifico_velho:'Frigoríficos velhos vão para o ecocentro! ❄️',
+  fralda_usada:'Fraldas usadas vão sempre para o lixo comum. 🚼',
+  chiclete:'Pastilha elástica vai para o lixo comum! 🍬',
+  guardanapo:'Guardanapos usados vão para o lixo comum. 🧻',
+  pilha:'Pilhas vão SEMPRE para o pilhão — nunca para o lixo comum! 🔋',
+  bateria:'Baterias são perigosas — vão para o pilhão! ⚡',
+  pilha_recarregavel:'Mesmo recarregáveis, as pilhas vão para o pilhão! ♻️',
+};
+
+const ALL_ITEMS=[
+  {key:'jornal',            label:'Jornal',               bin:'blue'},
+  {key:'caixa_cartao',      label:'Caixa de cartão',      bin:'blue'},
+  {key:'folha_papel',       label:'Folha de papel',       bin:'blue'},
+  {key:'caderno',           label:'Caderno velho',        bin:'blue'},
+  {key:'revista',           label:'Revista',              bin:'blue'},
+  {key:'envelope',          label:'Envelope',             bin:'blue'},
+  {key:'livro_velho',       label:'Livro velho',          bin:'blue'},
+  {key:'saco_papel',        label:'Saco de papel',        bin:'blue'},
+  {key:'lata_sumo',         label:'Lata de sumo',         bin:'yellow'},
+  {key:'garrafa_plastico',  label:'Garrafa de plástico',  bin:'yellow'},
+  {key:'frasco_shampoo',    label:'Frasco de shampoo',    bin:'yellow'},
+  {key:'saco_plastico',     label:'Saco de plástico',     bin:'yellow'},
+  {key:'lata_conserva',     label:'Lata de conserva',     bin:'yellow'},
+  {key:'pacote_sumo',       label:'Pacote de sumo',       bin:'yellow'},
+  {key:'garrafa_agua',      label:'Garrafa de água',      bin:'yellow'},
+  {key:'embalagem_plastico',label:'Embalagem plástica',   bin:'yellow'},
+  {key:'frasco_comprimidos',label:'Frasco comprimidos',   bin:'yellow'},
+  {key:'balde_plastico',    label:'Balde de plástico',    bin:'yellow'},
+  {key:'copo_iogurte',      label:'Copo de iogurte',      bin:'yellow'},
+  {key:'garrafa_oleo',      label:'Garrafa de azeite',    bin:'yellow'},
+  {key:'caixa_leite',       label:'Caixa de leite',       bin:'yellow'},
+  {key:'copo_plastico',     label:'Copo de plástico',     bin:'yellow'},
+  {key:'tabuleiro_plastico',label:'Tabuleiro plástico',   bin:'yellow'},
+  {key:'lata_tinta',        label:'Lata de tinta',        bin:'yellow'},
+  {key:'garrafa_vidro',     label:'Garrafa de vidro',     bin:'green'},
+  {key:'boiao_vidro',       label:'Boião de vidro',       bin:'green'},
+  {key:'frasco_mel',        label:'Frasco de vidro',      bin:'green'},
+  {key:'garrafa_vinho',     label:'Garrafa de vinho',     bin:'green'},
+  {key:'frasco_vidro_pequeno',label:'Frasco vidro peq.',  bin:'green'},
+  {key:'frasquinho_perfume',label:'Frasco de perfume',    bin:'green'},
+  {key:'garrafa_cerveja',   label:'Garrafa de cerveja',   bin:'green'},
+  {key:'restos_comida',     label:'Restos de comida',     bin:'black'},
+  {key:'casca_banana',      label:'Casca de banana',      bin:'black'},
+  {key:'lapis_partido',     label:'Lápis partido',        bin:'black'},
+  {key:'penso_rapido',      label:'Penso rápido',         bin:'black'},
+  {key:'papel_higienico',   label:'Papel higiénico usado',bin:'black'},
+  {key:'escova_dentes',     label:'Escova de dentes',     bin:'black'},
+  {key:'lampada',           label:'Lâmpada',              bin:'black'},
+  {key:'esponja',           label:'Esponja usada',        bin:'black'},
+  {key:'chinelo',           label:'Chinelo velho',        bin:'black'},
+  {key:'espinha_peixe',     label:'Espinha de peixe',     bin:'black'},
+  {key:'sapato_velho',      label:'Sapato velho',         bin:'black'},
+  {key:'rolo_cozinha',      label:'Rolo de cozinha usado',bin:'black'},
+  {key:'frigorifico_velho', label:'Frigorífico velho',    bin:'black'},
+  {key:'fralda_usada',      label:'Fralda usada',         bin:'black'},
+  {key:'chiclete',          label:'Pastilha elástica',    bin:'black'},
+  {key:'guardanapo',        label:'Guardanapo usado',     bin:'black'},
+  {key:'pilha',             label:'Pilha',                bin:'orange'},
+  {key:'bateria',           label:'Bateria',              bin:'orange'},
+  {key:'pilha_recarregavel',label:'Pilha recarregável',   bin:'orange'},
+];
+
+const FACTS=[
+  'Uma garrafa de vidro demora 4.000 anos a degradar na natureza!',
+  'Cada lata de alumínio reciclada poupa energia para 3 horas de computador!',
+  'Uma tonelada de papel reciclado poupa 17 árvores!',
+  'As pilhas contêm metais tóxicos — nunca vão para o lixo comum!',
+  'Portugal recicla mais de 70% das embalagens de vidro!',
+  'O plástico demora até 500 anos a degradar no ambiente!',
+  'Reciclar alumínio usa 95% menos energia do que produzir alumínio novo!',
+  'Portugal produz cerca de 4,8 milhões de toneladas de resíduos por ano.',
+];
+
+/* ══════════════════════ ICONS ══════════════════════ */
+const ICONS={
+jornal:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gP1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#faf7ee"/><stop offset="100%" stop-color="#ede8d5"/></linearGradient><linearGradient id="gP2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0ecdc"/><stop offset="100%" stop-color="#e2dcc8"/></linearGradient></defs><filter id="fSh"><feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity=".2"/></filter><g filter="url(#fSh)"><rect x="4" y="6" width="52" height="48" rx="3" fill="url(#gP1)" stroke="#c8b890" stroke-width="1.5"/><rect x="4" y="6" width="25" height="48" rx="3" fill="url(#gP2)" stroke="#c8b890" stroke-width="1.5"/></g><rect x="7" y="9" width="19" height="12" rx="2" fill="#c8dff0" stroke="#90b8d8" stroke-width="1"/><text x="16" y="18" text-anchor="middle" font-size="5.5" fill="#3366aa" font-weight="900" font-family="serif">NEWS</text><line x1="7" y1="25" x2="25" y2="25" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="7" y1="30" x2="25" y2="30" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="7" y1="35" x2="25" y2="35" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="7" y1="40" x2="22" y2="40" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><rect x="31" y="9" width="21" height="7" rx="1.5" fill="#e8d8a0" stroke="#c0a860" stroke-width="1"/><line x1="31" y1="21" x2="52" y2="21" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="31" y1="26" x2="52" y2="26" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="31" y1="31" x2="52" y2="31" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="31" y1="36" x2="52" y2="36" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="31" y1="41" x2="48" y2="41" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/><line x1="31" y1="46" x2="52" y2="46" stroke="#b0a080" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+caixa_cartao:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gB1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0d060"/><stop offset="100%" stop-color="#c8980a"/></linearGradient><linearGradient id="gB2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#d4a820"/><stop offset="100%" stop-color="#b08800"/></linearGradient><linearGradient id="gB3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8e070"/><stop offset="100%" stop-color="#d8b030"/></linearGradient></defs><filter id="fSh2"><feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity=".25"/></filter><g filter="url(#fSh2)"><rect x="7" y="26" width="38" height="28" rx="2" fill="url(#gB1)" stroke="#a07010" stroke-width="1.5"/><polygon points="45,26 55,20 55,48 45,54" fill="url(#gB2)" stroke="#a07010" stroke-width="1.5"/><polygon points="7,26 18,20 55,20 45,26" fill="url(#gB3)" stroke="#a07010" stroke-width="1.5"/></g><polygon points="7,26 25,23 25,26" fill="#c09020"/><polygon points="45,26 26,23 26,26" fill="#b08010"/><rect x="24" y="20" width="4" height="34" rx="1" fill="#f0e890" opacity=".65" stroke="#c8c060" stroke-width=".8"/><line x1="9" y1="35" x2="43" y2="35" stroke="#b08820" stroke-width=".8" opacity=".5"/><line x1="9" y1="43" x2="43" y2="43" stroke="#b08820" stroke-width=".8" opacity=".5"/></svg>`,
+folha_papel:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gFo" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f0f0ee"/></linearGradient></defs><filter id="fSh3"><feDropShadow dx="1.5" dy="2" stdDeviation="1.5" flood-opacity=".2"/></filter><g filter="url(#fSh3)"><polygon points="9,4 43,4 51,12 51,56 9,56" fill="url(#gFo)" stroke="#c8c8c8" stroke-width="1.5"/><polygon points="43,4 43,12 51,12" fill="#b8b8b8"/></g><line x1="15" y1="22" x2="46" y2="22" stroke="#ddd" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="29" x2="46" y2="29" stroke="#ddd" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="36" x2="46" y2="36" stroke="#ddd" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="43" x2="46" y2="43" stroke="#ddd" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="50" x2="35" y2="50" stroke="#ddd" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+caderno:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2e6bb0"/></linearGradient></defs><rect x="8" y="5" width="44" height="50" rx="3" fill="url(#gCD)" stroke="#1e4a80" stroke-width="1.5"/><rect x="6" y="5" width="7" height="50" rx="3" fill="#1e4a80"/><circle cx="9.5" cy="17" r="2.5" fill="#7ab8f0"/><circle cx="9.5" cy="30" r="2.5" fill="#7ab8f0"/><circle cx="9.5" cy="43" r="2.5" fill="#7ab8f0"/><rect x="16" y="12" width="30" height="36" rx="2" fill="white" opacity=".18"/><line x1="16" y1="22" x2="46" y2="22" stroke="white" stroke-width="1.2" opacity=".5"/><line x1="16" y1="30" x2="46" y2="30" stroke="white" stroke-width="1.2" opacity=".5"/><line x1="16" y1="38" x2="46" y2="38" stroke="white" stroke-width="1.2" opacity=".5"/><rect x="26" y="5" width="12" height="6" rx="3" fill="#1e4a80"/><rect x="28" y="3" width="4" height="4" rx="2" fill="#5a9ad8"/></svg>`,
+revista:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gRV" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e84040"/><stop offset="100%" stop-color="#b02020"/></linearGradient></defs><rect x="6" y="4" width="48" height="52" rx="3" fill="url(#gRV)" stroke="#880000" stroke-width="1.5"/><rect x="6" y="4" width="7" height="52" rx="3" fill="#880000"/><rect x="16" y="8" width="34" height="20" rx="2" fill="#ffcc60" stroke="#d0a000" stroke-width="1"/><rect x="18" y="10" width="30" height="8" rx="1.5" fill="#e04020" opacity=".7"/><text x="33" y="17" text-anchor="middle" font-size="6.5" fill="white" font-weight="900" font-family="sans-serif">REVISTA</text><line x1="16" y1="34" x2="50" y2="34" stroke="white" stroke-width="1.2" opacity=".4"/><line x1="16" y1="41" x2="50" y2="41" stroke="white" stroke-width="1.2" opacity=".4"/><line x1="16" y1="48" x2="42" y2="48" stroke="white" stroke-width="1.2" opacity=".4"/></svg>`,
+envelope:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gEV" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#faf7ee"/><stop offset="100%" stop-color="#e8e0cc"/></linearGradient></defs><rect x="5" y="16" width="50" height="34" rx="4" fill="url(#gEV)" stroke="#c8b890" stroke-width="1.5"/><polygon points="5,16 30,35 55,16" fill="#e0d8c0" stroke="#c8b890" stroke-width="1.5"/><line x1="5" y1="50" x2="25" y2="32" stroke="#c8b890" stroke-width="1.2"/><line x1="55" y1="50" x2="35" y2="32" stroke="#c8b890" stroke-width="1.2"/><rect x="22" y="20" width="16" height="10" rx="2" fill="#dd3333" stroke="#aa1111" stroke-width="1" opacity=".85"/><rect x="22" y="20" width="16" height="5" rx="2" fill="#cc2222" opacity=".85"/><rect x="24" y="22" width="4" height="6" rx="1" fill="#ee5555" opacity=".7"/></svg>`,
+livro_velho:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gLB" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#8B4513"/><stop offset="100%" stop-color="#A0522D"/></linearGradient></defs><rect x="10" y="8" width="38" height="46" rx="2" fill="#f5f0e8" stroke="#c8b890" stroke-width="1.5"/><rect x="46" y="10" width="4" height="42" rx="1" fill="#e8e0d0"/><rect x="8" y="6" width="7" height="50" rx="3" fill="url(#gLB)" stroke="#6B3410" stroke-width="1.5"/><rect x="13" y="8" width="33" height="44" rx="2" fill="#c04020" stroke="#901800" stroke-width="1"/><rect x="17" y="15" width="25" height="3" rx="1.5" fill="#e8c090" opacity=".8"/><rect x="17" y="21" width="18" height="2" rx="1" fill="#e8c090" opacity=".6"/><rect x="17" y="27" width="25" height="17" rx="2" fill="#e8b080" opacity=".45" stroke="#d09050" stroke-width=".8"/><polygon points="38,8 46,8 46,16" fill="#901800" opacity=".4"/></svg>`,
+saco_papel:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gSP" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c8a870"/><stop offset="50%" stop-color="#e8c890"/><stop offset="100%" stop-color="#b09060"/></linearGradient></defs><path d="M14,18 L14,52 Q14,57 30,57 Q46,57 46,52 L46,18 Z" fill="url(#gSP)" stroke="#a08050" stroke-width="2"/><rect x="14" y="13" width="32" height="7" rx="1" fill="#b09060" stroke="#a08050" stroke-width="1.5"/><path d="M20,13 Q20,5 24,5 Q28,5 28,13" fill="none" stroke="#806040" stroke-width="2.5" stroke-linecap="round"/><path d="M32,13 Q32,5 36,5 Q40,5 40,13" fill="none" stroke="#806040" stroke-width="2.5" stroke-linecap="round"/><line x1="14" y1="36" x2="46" y2="36" stroke="#a08050" stroke-width="1" opacity=".4"/><rect x="40" y="18" width="6" height="34" fill="#a08050" opacity=".2" rx="2"/></svg>`,
+lata_sumo:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCn" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c82020"/><stop offset="40%" stop-color="#ee4040"/><stop offset="100%" stop-color="#aa1818"/></linearGradient><linearGradient id="gCnT" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d0d0d0"/><stop offset="100%" stop-color="#909090"/></linearGradient></defs><ellipse cx="30" cy="52" rx="13" ry="4" fill="#880808"/><rect x="17" y="11" width="26" height="41" fill="url(#gCn)"/><rect x="20" y="11" width="5" height="41" fill="white" opacity=".12"/><rect x="17" y="20" width="26" height="22" fill="#dd2020"/><rect x="17" y="20" width="26" height="3" fill="#ffdd00"/><rect x="17" y="39" width="26" height="3" fill="#ffdd00"/><text x="30" y="34" text-anchor="middle" font-size="7.5" fill="white" font-weight="900" font-family="sans-serif">SUMO</text><ellipse cx="30" cy="11" rx="13" ry="4" fill="url(#gCnT)" stroke="#888" stroke-width="1"/><ellipse cx="30" cy="52" rx="13" ry="4" fill="url(#gCnT)" stroke="#888" stroke-width="1"/><path d="M33,9 Q37,5 36,11" fill="none" stroke="#999" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+garrafa_plastico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPL" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#b8e0f8"/><stop offset="35%" stop-color="#e8f8ff"/><stop offset="100%" stop-color="#98c8e8"/></linearGradient></defs><ellipse cx="30" cy="54" rx="14" ry="3.5" fill="#88b8cc" opacity=".4"/><rect x="25" y="3" width="10" height="7" rx="3.5" fill="#e84040" stroke="#b02020" stroke-width="1.5"/><rect x="27" y="9" width="6" height="6" rx="2" fill="#f08080"/><path d="M21,15 L39,15 L44,24 L16,24 Z" fill="#c8ecf8"/><path d="M16,24 L14,50 Q14,57 30,57 Q46,57 46,50 L44,24 Z" fill="url(#gPL)" stroke="#90c0d8" stroke-width="1.5"/><rect x="14" y="34" width="32" height="2.5" rx="1.2" fill="#90c0d8" opacity=".45"/><rect x="14" y="40" width="32" height="2.5" rx="1.2" fill="#90c0d8" opacity=".45"/><ellipse cx="20" cy="37" rx="2.5" ry="10" fill="white" opacity=".3"/><text x="41" y="14" font-size="8" font-family="sans-serif" opacity=".75">♳</text></svg>`,
+frasco_shampoo:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gSH" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#9060d0"/><stop offset="50%" stop-color="#c090ff"/><stop offset="100%" stop-color="#7040b0"/></linearGradient></defs><ellipse cx="30" cy="54" rx="16" ry="3.5" fill="#6030a0" opacity=".35"/><rect x="27" y="3" width="6" height="4" rx="2" fill="#e0e0e0" stroke="#bbb" stroke-width="1"/><rect x="29" y="6" width="2" height="8" fill="#ccc"/><rect x="22" y="13" width="16" height="7" rx="3.5" fill="#7040b0" stroke="#5020a0" stroke-width="1.5"/><path d="M18,20 L42,20 L44,28 L16,28 Z" fill="#a070e0"/><path d="M16,28 L14,50 Q14,57 30,57 Q46,57 46,50 L44,28 Z" fill="url(#gSH)" stroke="#7040b0" stroke-width="1.5"/><rect x="16" y="32" width="28" height="16" rx="3" fill="white" opacity=".28"/><text x="30" y="39" text-anchor="middle" font-size="5.5" fill="white" font-weight="900" font-family="sans-serif">SHAMPOO</text><text x="30" y="47" text-anchor="middle" font-size="5" fill="white" font-weight="900" font-family="sans-serif" opacity=".8">PLÁSTICO</text><ellipse cx="20" cy="38" rx="2" ry="9" fill="white" opacity=".22"/><text x="41" y="14" font-size="8" font-family="sans-serif" fill="white" opacity=".85">♳</text></svg>`,
+saco_plastico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ddf0ff"/><stop offset="100%" stop-color="#b8d8f8"/></linearGradient></defs><path d="M22,14 Q22,4 27,4 Q32,4 32,14" fill="none" stroke="#5588cc" stroke-width="2.5" stroke-linecap="round"/><path d="M28,14 Q28,4 33,4 Q38,4 38,14" fill="none" stroke="#5588cc" stroke-width="2.5" stroke-linecap="round"/><rect x="20" y="13" width="20" height="5" rx="2.5" fill="#88aadd"/><path d="M20,18 Q13,24 12,34 L11,52 Q11,58 30,58 Q49,58 49,52 L48,34 Q47,24 40,18 Z" fill="url(#gBG)" stroke="#80aad8" stroke-width="1.5"/><path d="M22,22 Q20,36 19,50" fill="none" stroke="white" stroke-width="1.5" opacity=".55" stroke-linecap="round"/><path d="M38,22 Q40,36 41,50" fill="none" stroke="white" stroke-width="1.5" opacity=".55" stroke-linecap="round"/></svg>`,
+lata_conserva:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gTN" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#aaaaaa"/><stop offset="30%" stop-color="#e0e0e0"/><stop offset="100%" stop-color="#999999"/></linearGradient><linearGradient id="gTNT" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d8d8d8"/><stop offset="100%" stop-color="#a0a0a0"/></linearGradient></defs><ellipse cx="30" cy="52" rx="17" ry="5" fill="#909090"/><rect x="13" y="13" width="34" height="39" fill="url(#gTN)"/><rect x="16" y="13" width="5" height="39" fill="white" opacity=".14"/><rect x="13" y="22" width="34" height="22" fill="#f5e8c0" stroke="#ddd" stroke-width=".8"/><rect x="13" y="22" width="34" height="7" fill="#cc2222"/><text x="30" y="27.5" text-anchor="middle" font-size="5.5" fill="white" font-weight="900" font-family="sans-serif">ATUM</text><line x1="15" y1="34" x2="45" y2="34" stroke="#ddd" stroke-width="1"/><line x1="15" y1="38" x2="45" y2="38" stroke="#ddd" stroke-width="1"/><ellipse cx="30" cy="13" rx="17" ry="5" fill="url(#gTNT)" stroke="#999" stroke-width="1.2"/><ellipse cx="30" cy="52" rx="17" ry="5" fill="url(#gTNT)" stroke="#999" stroke-width="1.2"/><path d="M34,10 Q40,7 38,13" fill="none" stroke="#aaa" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+pacote_sumo:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gJC" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e06000"/><stop offset="50%" stop-color="#ff8020"/><stop offset="100%" stop-color="#c05000"/></linearGradient></defs><rect x="14" y="18" width="32" height="36" rx="3" fill="url(#gJC)" stroke="#a04000" stroke-width="1.5"/><polygon points="14,18 30,8 46,18" fill="#e87010" stroke="#a04000" stroke-width="1.5"/><polygon points="14,18 22,13 22,18" fill="#b05000"/><polygon points="46,18 38,13 38,18" fill="#b05000"/><rect x="16" y="24" width="28" height="22" rx="2" fill="white" opacity=".16"/><circle cx="30" cy="32" r="8" fill="#ff9030" opacity=".6"/><circle cx="30" cy="32" r="5" fill="#ffaa40" opacity=".6"/><text x="30" y="50" text-anchor="middle" font-size="5.5" fill="white" font-weight="900" font-family="sans-serif">SUMO</text><rect x="16" y="18" width="6" height="36" fill="white" opacity=".09" rx="2"/></svg>`,
+garrafa_agua:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gWA" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#b8e0f8"/><stop offset="30%" stop-color="#e8f8ff"/><stop offset="100%" stop-color="#98c8e8"/></linearGradient></defs><ellipse cx="30" cy="55" rx="15" ry="3.5" fill="#70b0d0" opacity=".4"/><rect x="25" y="3" width="10" height="7" rx="3.5" fill="#1878cc" stroke="#0e50a0" stroke-width="1.5"/><rect x="27" y="9" width="6" height="7" rx="2" fill="#60a0d8"/><path d="M22,16 L38,16 L43,24 L17,24 Z" fill="#c0e8f8"/><path d="M17,24 L15,50 Q15,57 30,57 Q45,57 45,50 L43,24 Z" fill="url(#gWA)" stroke="#80c0e0" stroke-width="1.5"/><rect x="17" y="28" width="26" height="18" rx="3" fill="white" opacity=".5" stroke="#80c0e0" stroke-width=".8"/><text x="30" y="38" text-anchor="middle" font-size="7" fill="#0e50a0" font-weight="900" font-family="sans-serif">ÁGUA</text><rect x="15" y="47" width="30" height="2.5" rx="1.2" fill="#80c0e0" opacity=".4"/><ellipse cx="21" cy="36" rx="2.5" ry="11" fill="white" opacity=".28"/><text x="41" y="14" font-size="8" font-family="sans-serif" opacity=".75">♳</text></svg>`,
+embalagem_plastico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCT" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8f8f8"/><stop offset="100%" stop-color="#ddd"/></linearGradient></defs><rect x="8" y="22" width="44" height="32" rx="6" fill="url(#gCT)" stroke="#bbb" stroke-width="1.5"/><rect x="8" y="22" width="44" height="12" rx="6" fill="#e0e0e0"/><rect x="18" y="14" width="24" height="10" rx="4" fill="#d8d8d8" stroke="#bbb" stroke-width="1.5"/><rect x="24" y="10" width="12" height="6" rx="2" fill="#ccc"/><rect x="10" y="30" width="40" height="18" rx="4" fill="white" opacity=".65"/><text x="30" y="41" text-anchor="middle" font-size="6" fill="#555" font-weight="800" font-family="sans-serif">COMIDA</text><ellipse cx="13" cy="36" rx="1.5" ry="7" fill="white" opacity=".4"/></svg>`,
+frasco_comprimidos:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gMD" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#f0f0ff"/><stop offset="100%" stop-color="#e0e0f8"/></linearGradient></defs><ellipse cx="30" cy="54" rx="12" ry="3" fill="#b0b0cc" opacity=".4"/><rect x="20" y="8" width="20" height="11" rx="5.5" fill="#dd2222" stroke="#aa0000" stroke-width="1.5"/><line x1="30" y1="10" x2="30" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="13.5" x2="36" y2="13.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><rect x="23" y="18" width="14" height="5" rx="2" fill="#d0d0e8" stroke="#b0b0c8" stroke-width="1"/><rect x="18" y="22" width="24" height="32" rx="6" fill="url(#gMD)" stroke="#b0b0cc" stroke-width="1.5"/><rect x="20" y="30" width="20" height="18" rx="3" fill="white" opacity=".65" stroke="#c0c0e0" stroke-width=".8"/><text x="30" y="38" text-anchor="middle" font-size="5" fill="#6060aa" font-weight="900" font-family="sans-serif">PLÁSTICO</text><text x="30" y="45" text-anchor="middle" font-size="8" font-family="sans-serif" fill="#8080bb" opacity=".8">♳</text><ellipse cx="22" cy="36" rx="1.5" ry="8" fill="white" opacity=".35"/></svg>`,
+balde_plastico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBK" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#d09000"/><stop offset="40%" stop-color="#ffc820"/><stop offset="100%" stop-color="#b07800"/></linearGradient></defs><ellipse cx="30" cy="55" rx="16" ry="4" fill="#906000" opacity=".45"/><path d="M15,18 L19,51 Q19,57 30,57 Q41,57 41,51 L45,18 Z" fill="url(#gBK)" stroke="#906000" stroke-width="2"/><path d="M41,18 L45,18 L41,51 Q41,57 37,56 L41,51 Z" fill="#906000" opacity=".28"/><ellipse cx="30" cy="18" rx="15" ry="4.5" fill="#ffd030" stroke="#906000" stroke-width="2"/><path d="M18,18 Q30,8 42,18" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2.5" fill="#777"/><circle cx="42" cy="18" r="2.5" fill="#777"/></svg>`,
+copo_iogurte:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gYG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e8d0ff"/><stop offset="50%" stop-color="#f5e8ff"/><stop offset="100%" stop-color="#d0b0f0"/></linearGradient></defs><ellipse cx="30" cy="55" rx="13" ry="3.5" fill="#9060c0" opacity=".35"/><path d="M18,14 L21,52 Q21,57 30,57 Q39,57 39,52 L42,14 Z" fill="url(#gYG)" stroke="#b080d8" stroke-width="1.5"/><rect x="17" y="11" width="26" height="5" rx="2.5" fill="#c090e8" stroke="#a070c8" stroke-width="1.5"/><rect x="17" y="7" width="26" height="5" rx="2" fill="#e8e8f0" stroke="#c0c0d0" stroke-width="1"/><path d="M39,7 Q46,4 44,10" fill="none" stroke="#b0b0c0" stroke-width="1.5" stroke-linecap="round"/><rect x="20" y="20" width="20" height="18" rx="3" fill="white" opacity=".42"/><circle cx="30" cy="27" r="5" fill="#e080ff" opacity=".5"/><ellipse cx="21" cy="32" rx="1.5" ry="10" fill="white" opacity=".28"/></svg>`,
+garrafa_oleo:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gOL" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c89000"/><stop offset="40%" stop-color="#f5c000"/><stop offset="100%" stop-color="#a07000"/></linearGradient></defs><ellipse cx="30" cy="55" rx="14" ry="3.5" fill="#806000" opacity=".4"/><rect x="26" y="3" width="8" height="6" rx="3" fill="#cc7000" stroke="#994400" stroke-width="1.5"/><rect x="28" y="8" width="4" height="8" rx="2" fill="#dd9020"/><path d="M21,16 L39,16 L43,25 L17,25 Z" fill="#e8a820"/><path d="M17,25 L15,51 Q15,57 30,57 Q45,57 45,51 L43,25 Z" fill="url(#gOL)" stroke="#907000" stroke-width="1.5"/><rect x="17" y="30" width="26" height="16" rx="3" fill="#fff8e0" stroke="#c09000" stroke-width="1"/><text x="30" y="40" text-anchor="middle" font-size="6" fill="#705000" font-weight="900" font-family="sans-serif">AZEITE</text><ellipse cx="20" cy="37" rx="2" ry="9" fill="white" opacity=".2"/><text x="41" y="14" font-size="8" font-family="sans-serif" opacity=".75">♳</text></svg>`,
+caixa_leite:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gML" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#d8eeff"/><stop offset="100%" stop-color="#eef8ff"/></linearGradient></defs><rect x="13" y="20" width="34" height="34" rx="3" fill="url(#gML)" stroke="#90b8d8" stroke-width="1.5"/><rect x="40" y="20" width="7" height="34" rx="2" fill="#b8d8f0" stroke="#90b8d8" stroke-width="1"/><polygon points="13,20 30,9 47,20" fill="#c0d8f0" stroke="#90b8d8" stroke-width="1.5"/><polygon points="13,20 22,14 22,20" fill="#90b0d0"/><polygon points="47,20 38,14 38,20" fill="#a0c0e0"/><rect x="15" y="28" width="24" height="18" rx="2" fill="white" opacity=".7"/><ellipse cx="22" cy="35" rx="4" ry="2.8" fill="#333" opacity=".18"/><ellipse cx="32" cy="31" rx="3" ry="2" fill="#333" opacity=".14"/><ellipse cx="30" cy="38" rx="3.5" ry="2.3" fill="#333" opacity=".14"/><text x="27" y="51" text-anchor="middle" font-size="6" fill="#2060a0" font-weight="900" font-family="sans-serif">LEITE</text></svg>`,
+copo_plastico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCP" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c0e8ff"/><stop offset="40%" stop-color="#e8f8ff"/><stop offset="100%" stop-color="#a8d8f0"/></linearGradient></defs><path d="M18,10 L14,54 Q14,58 30,58 Q46,58 46,54 L42,10 Z" fill="url(#gCP)" stroke="#80c0e0" stroke-width="1.5"/><rect x="17" y="8" width="26" height="4" rx="2" fill="#a0d0f0" stroke="#70b0d8" stroke-width="1.2"/><path d="M16,40 L14,54 Q14,58 30,58 Q46,58 46,54 L44,40 Z" fill="#ffcc50" opacity=".55"/><ellipse cx="30" cy="40" rx="14" ry="2" fill="#ffaa20" opacity=".4"/><rect x="36" y="3" width="3.5" height="32" rx="1.7" fill="#ff6666" stroke="#cc3333" stroke-width=".8"/><line x1="21" y1="13" x2="17" y2="52" stroke="white" stroke-width="2" opacity=".4" stroke-linecap="round"/></svg>`,
+tabuleiro_plastico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gTR" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0f0f0"/><stop offset="100%" stop-color="#d8d8d8"/></linearGradient></defs><path d="M8,22 L12,50 Q12,55 30,55 Q48,55 48,50 L52,22 Z" fill="url(#gTR)" stroke="#b0b0b0" stroke-width="2"/><rect x="7" y="18" width="46" height="6" rx="3" fill="#e0e0e0" stroke="#b0b0b0" stroke-width="1.5"/><line x1="20" y1="24" x2="18" y2="53" stroke="#b0b0b0" stroke-width="1.2"/><line x1="40" y1="24" x2="42" y2="53" stroke="#b0b0b0" stroke-width="1.2"/><line x1="8" y1="38" x2="52" y2="38" stroke="#b0b0b0" stroke-width="1.2"/><ellipse cx="13" cy="36" rx="2" ry="8" fill="white" opacity=".4"/><ellipse cx="14" cy="44" rx="4" ry="2.5" fill="#d4a060" opacity=".35"/><ellipse cx="46" cy="44" rx="4" ry="2.5" fill="#cc6644" opacity=".3"/></svg>`,
+lata_tinta:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPC" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#aaaaaa"/><stop offset="40%" stop-color="#e0e0e0"/><stop offset="100%" stop-color="#909090"/></linearGradient></defs><ellipse cx="30" cy="53" rx="17" ry="5" fill="#808080" opacity=".5"/><rect x="13" y="16" width="34" height="37" fill="url(#gPC)" stroke="#888" stroke-width="2"/><ellipse cx="30" cy="16" rx="17" ry="5" fill="#d0d0d0" stroke="#888" stroke-width="2"/><ellipse cx="30" cy="16" rx="13" ry="3.5" fill="#c0c0c0"/><ellipse cx="30" cy="53" rx="17" ry="5" fill="#c0c0c0" stroke="#888" stroke-width="2"/><path d="M16,20 Q30,10 44,20" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="20" r="2.5" fill="#777"/><circle cx="44" cy="20" r="2.5" fill="#777"/><path d="M38,16 Q39,24 38,32 Q37,35 38,38" fill="none" stroke="#cc4400" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="38" cy="39" rx="3.5" ry="2.5" fill="#cc4400"/><rect x="15" y="27" width="30" height="16" rx="2" fill="#ee6600" stroke="#cc4400" stroke-width="1"/><text x="30" y="37.5" text-anchor="middle" font-size="6.5" fill="white" font-weight="900" font-family="sans-serif">TINTA</text></svg>`,
+garrafa_vidro:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gGV" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#1a5c28"/><stop offset="30%" stop-color="#2e8040"/><stop offset="60%" stop-color="#3a9e50"/><stop offset="100%" stop-color="#1a5c28"/></linearGradient><linearGradient id="gGVN" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#16501f"/><stop offset="50%" stop-color="#2a7035"/><stop offset="100%" stop-color="#16501f"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="13" ry="2.5" fill="#000" opacity=".15"/><!-- body --><path d="M19,28 C15,30 13,36 13,42 L13,52 Q13,57 30,57 Q47,57 47,52 L47,42 C47,36 45,30 41,28 L38,18 L22,18 Z" fill="url(#gGV)" stroke="#13441e" stroke-width="1.5"/><!-- shoulder highlight --><path d="M22,18 L38,18 L41,26 C36,24 24,24 19,26 Z" fill="#3aaa52" opacity=".6"/><!-- neck --><rect x="24" y="8" width="12" height="11" rx="3" fill="url(#gGVN)" stroke="#0e3316" stroke-width="1.2"/><!-- cork --><rect x="26" y="3" width="8" height="7" rx="2.5" fill="#c8a050" stroke="#8a6020" stroke-width="1.2"/><!-- cork lines --><line x1="26" y1="5.5" x2="34" y2="5.5" stroke="#8a6020" stroke-width=".7" opacity=".6"/><line x1="26" y1="7.5" x2="34" y2="7.5" stroke="#8a6020" stroke-width=".7" opacity=".6"/><!-- glass shine left --><path d="M17,32 Q16,42 17,50" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".22"/><!-- glass shine center --><ellipse cx="23" cy="38" rx="1.8" ry="8" fill="white" opacity=".18"/><!-- label --><rect x="16" y="33" width="28" height="16" rx="3" fill="#e8f5e0" stroke="#2e8040" stroke-width="1.2"/><!-- label text lines --><text x="30" y="40" text-anchor="middle" font-size="6.5" fill="#1a5c28" font-weight="900" font-family="sans-serif">VIDRO</text><line x1="19" y1="43" x2="38" y2="43" stroke="#2e8040" stroke-width="1" stroke-linecap="round" opacity=".5"/><!-- bottom rim --><ellipse cx="30" cy="52" rx="14" ry="3" fill="#13441e" opacity=".35"/></svg>`,
+boiao_vidro:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gJR" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#88c0b0"/><stop offset="30%" stop-color="#b8e0d0"/><stop offset="65%" stop-color="#d0f0e4"/><stop offset="100%" stop-color="#88c0b0"/></linearGradient><linearGradient id="gLID" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8c040"/><stop offset="100%" stop-color="#a07818"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="18" ry="2.5" fill="#000" opacity=".13"/><!-- body — wide jar --><path d="M11,24 Q9,28 9,34 L9,50 Q9,56 30,56 Q51,56 51,50 L51,34 Q51,28 49,24 Z" fill="url(#gJR)" stroke="#5a9888" stroke-width="1.8"/><!-- shoulder line --><line x1="11" y1="26" x2="49" y2="26" stroke="#5a9888" stroke-width="1" opacity=".4"/><!-- lid ring --><rect x="13" y="15" width="34" height="5" rx="2.5" fill="#806010" stroke="#604000" stroke-width="1"/><!-- lid top --><rect x="11" y="7" width="38" height="10" rx="5" fill="url(#gLID)" stroke="#806010" stroke-width="1.5"/><!-- lid ridges --><line x1="16" y1="7" x2="16" y2="17" stroke="#a07018" stroke-width="1" opacity=".5"/><line x1="22" y1="7" x2="22" y2="17" stroke="#a07018" stroke-width="1" opacity=".5"/><line x1="28" y1="7" x2="28" y2="17" stroke="#a07018" stroke-width="1" opacity=".5"/><line x1="34" y1="7" x2="34" y2="17" stroke="#a07018" stroke-width="1" opacity=".5"/><line x1="40" y1="7" x2="40" y2="17" stroke="#a07018" stroke-width="1" opacity=".5"/><!-- glass shine --><path d="M13,28 Q12,40 13,50" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity=".25"/><!-- content (tomato) --><ellipse cx="30" cy="46" rx="16" ry="6" fill="#e05030" opacity=".35"/><!-- label --><rect x="13" y="30" width="34" height="16" rx="3" fill="white" opacity=".55" stroke="#5a9888" stroke-width=".8"/><!-- label lines --><text x="30" y="38" text-anchor="middle" font-size="6.5" fill="#3a7870" font-weight="900" font-family="sans-serif">VIDRO</text><line x1="17" y1="42" x2="39" y2="42" stroke="#5a9888" stroke-width=".9" stroke-linecap="round" opacity=".4"/></svg>`,
+frasco_mel:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gHN" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c87800"/><stop offset="30%" stop-color="#f0a820"/><stop offset="65%" stop-color="#ffc840"/><stop offset="100%" stop-color="#c87800"/></linearGradient><linearGradient id="gHLID" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c0c0c8"/><stop offset="100%" stop-color="#808090"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="14" ry="2.5" fill="#000" opacity=".13"/><!-- hexagonal-ish honey jar body --><path d="M16,22 Q13,26 13,32 L13,50 Q13,56 30,56 Q47,56 47,50 L47,32 Q47,26 44,22 Z" fill="url(#gHN)" stroke="#a06000" stroke-width="1.8"/><!-- shoulder --><path d="M16,22 Q20,20 30,20 Q40,20 44,22 L42,26 Q36,24 24,24 Z" fill="#f0b020" opacity=".7"/><!-- neck --><rect x="23" y="11" width="14" height="10" rx="3" fill="#c07800" stroke="#905000" stroke-width="1.2"/><!-- lid --><rect x="21" y="6" width="18" height="7" rx="3.5" fill="url(#gHLID)" stroke="#606070" stroke-width="1.2"/><!-- lid grip lines --><line x1="25" y1="6" x2="25" y2="13" stroke="#707080" stroke-width="1" opacity=".5"/><line x1="30" y1="6" x2="30" y2="13" stroke="#707080" stroke-width="1" opacity=".5"/><line x1="35" y1="6" x2="35" y2="13" stroke="#707080" stroke-width="1" opacity=".5"/><!-- glass shine --><path d="M16,28 Q15,38 16,50" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".28"/><!-- honey content visible --><path d="M13,44 Q13,56 30,56 Q47,56 47,44 L47,50 Q47,56 30,56 Q13,56 13,50 Z" fill="#e08000" opacity=".3"/><!-- label --><rect x="15" y="30" width="30" height="16" rx="3" fill="#fff8e0" stroke="#c08000" stroke-width="1"/><!-- honeycomb pattern hint --><line x1="19" y1="36" x2="41" y2="36" stroke="#c08000" stroke-width="1" stroke-linecap="round" opacity=".6"/><line x1="19" y1="40" x2="36" y2="40" stroke="#c08000" stroke-width=".9" stroke-linecap="round" opacity=".4"/><!-- bee --><text x="30" y="35" text-anchor="middle" font-size="7" font-family="sans-serif">🍯</text></svg>`,
+garrafa_vinho:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gWN" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3a0a30"/><stop offset="30%" stop-color="#6a1850"/><stop offset="60%" stop-color="#7e2060"/><stop offset="100%" stop-color="#3a0a30"/></linearGradient><linearGradient id="gWNN" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2e0828"/><stop offset="50%" stop-color="#501040"/><stop offset="100%" stop-color="#2e0828"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="13" ry="2.5" fill="#000" opacity=".18"/><!-- body — Bordeaux shape, straight sides --><path d="M20,30 L18,52 Q18,57 30,57 Q42,57 42,52 L40,30 Z" fill="url(#gWN)" stroke="#280620" stroke-width="1.5"/><!-- shoulder — angled Bordeaux --><path d="M22,24 L20,30 L40,30 L38,24 Z" fill="#5a1548" stroke="#280620" stroke-width="1"/><!-- neck — tall and thin --><rect x="26" y="8" width="8" height="17" rx="2" fill="url(#gWNN)" stroke="#1e0418" stroke-width="1.2"/><!-- foil capsule --><rect x="24" y="5" width="12" height="8" rx="2" fill="#b84040" stroke="#881818" stroke-width="1.2"/><!-- foil detail --><line x1="24" y1="9" x2="36" y2="9" stroke="#881818" stroke-width=".8" opacity=".6"/><!-- cork top --><rect x="27" y="2" width="6" height="5" rx="1.5" fill="#c8a050" stroke="#8a6020" stroke-width="1"/><!-- glass shine --><path d="M22,32 Q21,42 22,52" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".2"/><!-- label --><rect x="19" y="33" width="22" height="15" rx="2.5" fill="#f5f0e8" stroke="#b09060" stroke-width="1.2"/><!-- label decorations --><line x1="22" y1="38" x2="38" y2="38" stroke="#8a6030" stroke-width="1" stroke-linecap="round" opacity=".7"/><line x1="22" y1="42" x2="36" y2="42" stroke="#8a6030" stroke-width=".9" stroke-linecap="round" opacity=".5"/><!-- chateau arc --><path d="M22,35 Q30,32 38,35" fill="none" stroke="#8a6030" stroke-width=".9" opacity=".5"/><!-- bottom punt --><ellipse cx="30" cy="53" rx="7" ry="2" fill="#280620" opacity=".5"/></svg>`,
+frasco_vidro_pequeno:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gSJ" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#78b8b0"/><stop offset="30%" stop-color="#a8d8d0"/><stop offset="65%" stop-color="#c8f0e8"/><stop offset="100%" stop-color="#78b8b0"/></linearGradient><linearGradient id="gSJL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d0b040"/><stop offset="100%" stop-color="#907020"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="13" ry="2.5" fill="#000" opacity=".12"/><!-- body — small round jar --><path d="M15,26 Q13,30 13,36 L13,50 Q13,56 30,56 Q47,56 47,50 L47,36 Q47,30 45,26 Z" fill="url(#gSJ)" stroke="#509890" stroke-width="1.8"/><!-- shoulder --><ellipse cx="30" cy="26" rx="15" ry="4" fill="#90c8c0" stroke="#509890" stroke-width="1"/><!-- neck --><rect x="23" y="13" width="14" height="14" rx="3" fill="#68a8a0" stroke="#3a7870" stroke-width="1.2"/><!-- lid --><rect x="20" y="7" width="20" height="8" rx="4" fill="url(#gSJL)" stroke="#706010" stroke-width="1.5"/><!-- lid ridges --><line x1="24" y1="7" x2="24" y2="15" stroke="#907030" stroke-width=".9" opacity=".5"/><line x1="28" y1="7" x2="28" y2="15" stroke="#907030" stroke-width=".9" opacity=".5"/><line x1="32" y1="7" x2="32" y2="15" stroke="#907030" stroke-width=".9" opacity=".5"/><line x1="36" y1="7" x2="36" y2="15" stroke="#907030" stroke-width=".9" opacity=".5"/><!-- glass shine --><path d="M15,30 Q14,40 15,50" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".26"/><!-- content tint --><ellipse cx="30" cy="48" rx="13" ry="4" fill="#e08030" opacity=".25"/><!-- label --><rect x="15" y="30" width="30" height="16" rx="3" fill="white" opacity=".5" stroke="#509890" stroke-width=".8"/><text x="30" y="38" text-anchor="middle" font-size="6.5" fill="#3a7870" font-weight="900" font-family="sans-serif">VIDRO</text><line x1="19" y1="41" x2="37" y2="41" stroke="#509890" stroke-width=".8" stroke-linecap="round" opacity=".4"/></svg>`,
+frasquinho_perfume:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPF" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c090e0"/><stop offset="30%" stop-color="#e0b8ff"/><stop offset="65%" stop-color="#f0d0ff"/><stop offset="100%" stop-color="#c090e0"/></linearGradient><linearGradient id="gPFC" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d0d0d8"/><stop offset="100%" stop-color="#909098"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="15" ry="2.5" fill="#000" opacity=".12"/><!-- body — flat elegant perfume bottle --><path d="M17,24 L17,50 Q17,56 30,56 Q43,56 43,50 L43,24 Q43,20 36,18 L36,15 L24,15 L24,18 Q17,20 17,24 Z" fill="url(#gPF)" stroke="#9060c0" stroke-width="1.5"/><!-- body inner glow --><rect x="19" y="24" width="22" height="28" rx="4" fill="white" opacity=".18"/><!-- neck --><rect x="24" y="9" width="12" height="8" rx="3" fill="#b080d8" stroke="#8050b0" stroke-width="1.2"/><!-- atomiser top --><rect x="22" y="4" width="16" height="7" rx="3.5" fill="url(#gPFC)" stroke="#707080" stroke-width="1.2"/><!-- atomiser nozzle --><rect x="36" y="5" width="10" height="3" rx="1.5" fill="#a0a0a8" stroke="#707080" stroke-width=".8"/><!-- glass shine left --><path d="M19,26 Q18,38 19,50" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity=".35"/><!-- glass shine small --><ellipse cx="23" cy="36" rx="1.5" ry="8" fill="white" opacity=".25"/><!-- label elegant --><rect x="19" y="28" width="22" height="18" rx="3" fill="white" opacity=".55" stroke="#b080d8" stroke-width=".8"/><!-- label lines --><text x="30" y="36" text-anchor="middle" font-size="6" fill="#7040b0" font-weight="900" font-family="sans-serif">VIDRO</text><line x1="22" y1="40" x2="36" y2="40" stroke="#9060c0" stroke-width=".8" stroke-linecap="round" opacity=".4"/><!-- decorative arc on label --><path d="M22,31 Q30,28 38,31" fill="none" stroke="#9060c0" stroke-width=".8" opacity=".5"/><!-- sparkles --><circle cx="44" cy="18" r="1.5" fill="#e0b0ff" opacity=".8"/><circle cx="46" cy="13" r="1" fill="#e0b0ff" opacity=".6"/><circle cx="42" cy="12" r="1" fill="#e0b0ff" opacity=".6"/></svg>`,
+garrafa_cerveja:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBR" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2a5a10"/><stop offset="30%" stop-color="#448820"/><stop offset="65%" stop-color="#56a828"/><stop offset="100%" stop-color="#2a5a10"/></linearGradient><linearGradient id="gBRN" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#204808"/><stop offset="50%" stop-color="#386818"/><stop offset="100%" stop-color="#204808"/></linearGradient></defs><!-- shadow --><ellipse cx="30" cy="58" rx="12" ry="2.5" fill="#000" opacity=".16"/><!-- body — classic beer bottle, narrower bottom --><path d="M21,28 C17,30 15,36 15,42 L15,52 Q15,57 30,57 Q45,57 45,52 L45,42 C45,36 43,30 39,28 L37,18 L23,18 Z" fill="url(#gBR)" stroke="#1a4208" stroke-width="1.5"/><!-- shoulder highlight --><path d="M23,18 L37,18 L39,26 C34,24 26,24 21,26 Z" fill="#56b028" opacity=".55"/><!-- neck --><rect x="25" y="7" width="10" height="12" rx="2.5" fill="url(#gBRN)" stroke="#143008" stroke-width="1.2"/><!-- crown cap --><rect x="23" y="3" width="14" height="6" rx="2" fill="#c0c0c0" stroke="#888" stroke-width="1.2"/><!-- crown cap teeth --><path d="M23,7 L25,9 L27,7 L29,9 L31,7 L33,9 L35,7 L37,9" fill="none" stroke="#888" stroke-width="1" stroke-linecap="round"/><!-- glass shine --><path d="M18,32 Q17,42 18,52" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".22"/><!-- label --><rect x="17" y="32" width="26" height="16" rx="3" fill="#f5e828" stroke="#c0a000" stroke-width="1.2"/><!-- label arc top --><path d="M20,35 Q30,31 40,35" fill="none" stroke="#806000" stroke-width="1" opacity=".6"/><!-- label text lines --><line x1="20" y1="38" x2="40" y2="38" stroke="#806000" stroke-width="1.1" stroke-linecap="round" opacity=".7"/><line x1="20" y1="42" x2="36" y2="42" stroke="#806000" stroke-width=".9" stroke-linecap="round" opacity=".5"/><!-- bottom --><ellipse cx="30" cy="53" rx="11" ry="2.5" fill="#1a4208" opacity=".4"/></svg>`,
+restos_comida:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPL2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0f0e8"/><stop offset="100%" stop-color="#d8d8d0"/></linearGradient></defs><ellipse cx="30" cy="43" rx="24" ry="13" fill="url(#gPL2)" stroke="#c0c0b8" stroke-width="1.5"/><ellipse cx="30" cy="43" rx="19" ry="10" fill="#f8f8f0"/><ellipse cx="24" cy="40" rx="6" ry="3.5" fill="#e8a040" opacity=".9"/><ellipse cx="35" cy="38" rx="5" ry="3" fill="#7aaa44" opacity=".9"/><ellipse cx="30" cy="45" rx="6" ry="3" fill="#cc5522" opacity=".85"/><ellipse cx="20" cy="45" rx="4" ry="2.5" fill="#e8d040" opacity=".8"/><ellipse cx="38" cy="44" rx="4" ry="2.5" fill="#7aaa44" opacity=".8"/><path d="M22,25 Q24,18 22,13" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round"/><path d="M30,23 Q32,16 30,11" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round"/><path d="M38,25 Q40,18 38,13" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+casca_banana:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBN1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#d09000"/><stop offset="100%" stop-color="#f0b820"/></linearGradient><linearGradient id="gBN2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e8a800"/><stop offset="100%" stop-color="#ffd030"/></linearGradient></defs><path d="M26,8 Q30,3 34,8" fill="none" stroke="#6a3000" stroke-width="2.5" stroke-linecap="round"/><path d="M30,8 Q19,10 15,23 L11,48 Q11,55 18,54 Q23,54 25,46 L30,20 Z" fill="url(#gBN1)" stroke="#c08000" stroke-width="1.8"/><path d="M30,8 Q41,10 45,23 L49,48 Q49,55 42,54 Q37,54 35,46 L30,20 Z" fill="url(#gBN2)" stroke="#c08000" stroke-width="1.8"/><path d="M30,8 L30,20 Q29,33 27,48" fill="none" stroke="#c08000" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="15" cy="51" rx="5" ry="2.5" fill="#7a3000" opacity=".5" transform="rotate(-10 15 51)"/><ellipse cx="45" cy="51" rx="5" ry="2.5" fill="#7a3000" opacity=".5" transform="rotate(10 45 51)"/></svg>`,
+lapis_partido:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPC2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#d0a000"/><stop offset="100%" stop-color="#f0c820"/></linearGradient></defs><g transform="rotate(-35 18 40)"><rect x="7" y="28" width="22" height="12" rx="2.5" fill="url(#gPC2)" stroke="#a07800" stroke-width="2"/><rect x="7" y="28" width="6" height="12" rx="2" fill="#b08800"/><polygon points="29,28 29,40 40,34" fill="#f5e0c0" stroke="#d09060" stroke-width="1.2"/><polygon points="38,33 40,34 38,35" fill="#3a2010"/></g><g transform="rotate(-35 42 18)"><rect x="31" y="9" width="22" height="12" rx="2.5" fill="url(#gPC2)" stroke="#a07800" stroke-width="2"/><rect x="31" y="9" width="6" height="12" rx="2" fill="#b08800"/><rect x="50" y="9" width="5" height="12" rx="2.5" fill="#f09090" stroke="#d07070" stroke-width="1.5"/><rect x="49" y="9" width="2.5" height="12" fill="#d07070"/></g><line x1="22" y1="40" x2="35" y2="25" stroke="#888" stroke-width="1.5" stroke-dasharray="3,2"/></svg>`,
+penso_rapido:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBD" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8f4ee"/><stop offset="100%" stop-color="#e8e0d0"/></linearGradient></defs><rect x="6" y="22" width="48" height="16" rx="8" fill="url(#gBD)" stroke="#c8c0b0" stroke-width="1.5"/><rect x="17" y="22" width="26" height="16" fill="#f0f0f8" stroke="#c0c0d0" stroke-width="1"/><line x1="30" y1="24" x2="30" y2="36" stroke="#e0e0e8" stroke-width="1.5"/><line x1="17" y1="30" x2="43" y2="30" stroke="#e0e0e8" stroke-width="1.5"/><rect x="23" y="26" width="14" height="8" rx="2" fill="#cc3333" opacity=".8"/><line x1="27" y1="30" x2="33" y2="30" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="30" y1="27" x2="30" y2="33" stroke="white" stroke-width="2" stroke-linecap="round"/><ellipse cx="11" cy="30" rx="5" ry="8" fill="#f0c0c0" opacity=".5"/><ellipse cx="49" cy="30" rx="5" ry="8" fill="#f0c0c0" opacity=".5"/></svg>`,
+papel_higienico:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPH" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e8e8e0"/><stop offset="40%" stop-color="#f8f8f4"/><stop offset="100%" stop-color="#d8d8d0"/></linearGradient></defs><ellipse cx="30" cy="30" rx="22" ry="26" fill="url(#gPH)" stroke="#c8c8c0" stroke-width="2"/><ellipse cx="30" cy="30" rx="9" ry="11" fill="#d8c8a0" stroke="#c0a880" stroke-width="1.5"/><ellipse cx="30" cy="30" rx="5.5" ry="7" fill="#e8d8b0" opacity=".7"/><line x1="8" y1="16" x2="52" y2="16" stroke="#d8d8d0" stroke-width="1.2" stroke-dasharray="2.5,3"/><line x1="8" y1="30" x2="52" y2="30" stroke="#d8d8d0" stroke-width="1.2" stroke-dasharray="2.5,3"/><line x1="8" y1="44" x2="52" y2="44" stroke="#d8d8d0" stroke-width="1.2" stroke-dasharray="2.5,3"/><path d="M44,4 Q50,8 48,16" fill="none" stroke="#c8c8c0" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+escova_dentes:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gET" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4488dd"/><stop offset="100%" stop-color="#2255aa"/></linearGradient></defs><rect x="9" y="27" width="42" height="7" rx="3.5" fill="url(#gET)" stroke="#1a3a88" stroke-width="1.2"/><rect x="9" y="27" width="11" height="7" rx="3.5" fill="#2255aa"/><rect x="37" y="22" width="13" height="4" rx="2" fill="#e8e8f0" stroke="#b0b0c8" stroke-width="1"/><rect x="37" y="35" width="13" height="4" rx="2" fill="#e8e8f0" stroke="#b0b0c8" stroke-width="1"/><rect x="39" y="18" width="2.5" height="6" rx="1.2" fill="#66aaff" opacity=".9"/><rect x="43" y="18" width="2.5" height="6" rx="1.2" fill="#66aaff" opacity=".9"/><rect x="47" y="18" width="2.5" height="6" rx="1.2" fill="#66aaff" opacity=".9"/><rect x="39" y="37" width="2.5" height="6" rx="1.2" fill="#66aaff" opacity=".9"/><rect x="43" y="37" width="2.5" height="6" rx="1.2" fill="#66aaff" opacity=".9"/><rect x="47" y="37" width="2.5" height="6" rx="1.2" fill="#66aaff" opacity=".9"/><rect x="9" y="28.5" width="10" height="4" rx="2" fill="#66aaff" opacity=".3"/></svg>`,
+lampada:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBB" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fffff0"/><stop offset="60%" stop-color="#ffffc0"/><stop offset="100%" stop-color="#e8e090"/></linearGradient><radialGradient id="gGL" cx="40%" cy="35%"><stop offset="0%" stop-color="white" stop-opacity=".8"/><stop offset="100%" stop-color="white" stop-opacity="0"/></radialGradient></defs><path d="M20,30 Q14,22 14,14 Q14,4 30,4 Q46,4 46,14 Q46,22 40,30 L38,38 L22,38 Z" fill="url(#gBB)" stroke="#d0c830" stroke-width="1.5"/><path d="M20,30 Q14,22 14,14 Q14,4 30,4 Q46,4 46,14 Q46,22 40,30 L38,38 L22,38 Z" fill="url(#gGL)"/><rect x="21" y="38" width="18" height="4" rx="1" fill="#c8c870" stroke="#a0a040" stroke-width="1"/><rect x="22" y="41" width="16" height="4" rx="1" fill="#b8b860" stroke="#a0a040" stroke-width="1"/><rect x="23" y="44" width="14" height="4" rx="1" fill="#a8a850" stroke="#909030" stroke-width="1"/><rect x="24" y="47" width="12" height="8" rx="2" fill="#989840" stroke="#808020" stroke-width="1"/><line x1="24" y1="50" x2="36" y2="50" stroke="#808020" stroke-width=".8"/><line x1="24" y1="53" x2="36" y2="53" stroke="#808020" stroke-width=".8"/><path d="M26,28 Q28,22 30,20 Q32,22 34,28" fill="none" stroke="#c8a000" stroke-width="1.5" stroke-linecap="round"/><line x1="30" y1="4" x2="30" y2="0" stroke="#ffee60" stroke-width="2"/><line x1="14" y1="10" x2="10" y2="6" stroke="#ffee60" stroke-width="2"/><line x1="46" y1="10" x2="50" y2="6" stroke="#ffee60" stroke-width="2"/></svg>`,
+esponja:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gSP2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffd040"/><stop offset="100%" stop-color="#e8b020"/></linearGradient></defs><rect x="7" y="18" width="46" height="28" rx="8" fill="url(#gSP2)" stroke="#c09010" stroke-width="1.5"/><rect x="7" y="18" width="46" height="13" rx="8" fill="#ffd040"/><rect x="7" y="27" width="46" height="6" fill="#ffd040"/><circle cx="18" cy="23" r="2" fill="#c09010" opacity=".4"/><circle cx="28" cy="21" r="1.8" fill="#c09010" opacity=".35"/><circle cx="38" cy="23" r="2" fill="#c09010" opacity=".4"/><circle cx="48" cy="21" r="1.8" fill="#c09010" opacity=".35"/><circle cx="22" cy="27" r="1.8" fill="#c09010" opacity=".3"/><circle cx="42" cy="27" r="2" fill="#c09010" opacity=".35"/><rect x="7" y="30" width="46" height="16" rx="8" fill="#44cc88" stroke="#228844" stroke-width="1"/><rect x="7" y="30" width="46" height="5" rx="4" fill="#55dd99"/><line x1="10" y1="37" x2="50" y2="37" stroke="#228844" stroke-width="1" opacity=".5"/><line x1="10" y1="41" x2="50" y2="41" stroke="#228844" stroke-width="1" opacity=".4"/></svg>`,
+chinelo:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCH" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3aabdd"/><stop offset="100%" stop-color="#1a7aaa"/></linearGradient></defs><ellipse cx="30" cy="44" rx="24" ry="10" fill="url(#gCH)" stroke="#1a5a88" stroke-width="1.5"/><ellipse cx="30" cy="42" rx="22" ry="8" fill="#4ab8e8" stroke="#1a5a88" stroke-width="1"/><path d="M14,36 Q20,24 30,22 Q40,24 46,36" fill="#1a7aaa" stroke="#1a5a88" stroke-width="1.5"/><path d="M22,36 Q24,28 30,27 Q36,28 38,36" fill="#2a9acc" stroke="#1a5a88" stroke-width="1"/><ellipse cx="30" cy="44" rx="20" ry="7" fill="#5ac8f0" opacity=".3"/></svg>`,
+espinha_peixe:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gFS" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a0a0a0"/><stop offset="100%" stop-color="#c8c8c8"/></linearGradient></defs><line x1="8" y1="30" x2="50" y2="30" stroke="url(#gFS)" stroke-width="4" stroke-linecap="round"/><polygon points="50,30 58,20 60,30 58,40" fill="#b0b0b0" stroke="#888" stroke-width="1.2"/><ellipse cx="10" cy="30" rx="6" ry="7" fill="#c0c0c0" stroke="#888" stroke-width="1.5"/><circle cx="8" cy="28" r="1.8" fill="#333"/><circle cx="7.5" cy="27.5" r=".6" fill="white"/><path d="M6,32 Q10,35 14,32" fill="none" stroke="#888" stroke-width="1.2"/><line x1="22" y1="30" x2="18" y2="18" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="29" y1="30" x2="25" y2="16" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="36" y1="30" x2="32" y2="18" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="43" y1="30" x2="40" y2="21" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="30" x2="18" y2="42" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="29" y1="30" x2="25" y2="44" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="36" y1="30" x2="32" y2="42" stroke="#aaa" stroke-width="2" stroke-linecap="round"/><line x1="43" y1="30" x2="40" y2="39" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>`,
+sapato_velho:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gSV" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#888888"/><stop offset="100%" stop-color="#555555"/></linearGradient></defs><ellipse cx="32" cy="52" rx="24" ry="6" fill="#333" opacity=".4"/><path d="M8,44 L8,32 Q8,20 22,18 L32,18 L38,14 Q46,10 50,16 L52,22 Q54,28 50,32 L48,44 Z" fill="url(#gSV)" stroke="#333" stroke-width="1.5"/><path d="M8,44 L8,38 Q16,42 28,42 L48,40 L48,44 Q36,48 20,48 Z" fill="#444" stroke="#222" stroke-width="1"/><path d="M8,32 Q16,36 28,36 L46,34" fill="none" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3,2"/><rect x="28" y="14" width="22" height="4" rx="2" fill="#cc5522" stroke="#aa3300" stroke-width="1"/><line x1="32" y1="18" x2="32" y2="36" stroke="#aaa" stroke-width="1.2" stroke-dasharray="2,2"/><line x1="38" y1="18" x2="38" y2="38" stroke="#aaa" stroke-width="1.2" stroke-dasharray="2,2"/><line x1="44" y1="17" x2="44" y2="38" stroke="#aaa" stroke-width="1.2" stroke-dasharray="2,2"/></svg>`,
+rolo_cozinha:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gRK" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e8e8e0"/><stop offset="40%" stop-color="#f8f8f4"/><stop offset="100%" stop-color="#d8d8d0"/></linearGradient></defs><ellipse cx="30" cy="30" rx="20" ry="24" fill="url(#gRK)" stroke="#c8c8c0" stroke-width="2"/><ellipse cx="30" cy="30" rx="8" ry="10" fill="#e8c870" stroke="#c0a040" stroke-width="1.5"/><ellipse cx="30" cy="30" rx="5" ry="7" fill="#d4a840" opacity=".6"/><line x1="10" y1="18" x2="50" y2="18" stroke="#d8d8d0" stroke-width="1.2" stroke-dasharray="2.5,3"/><line x1="10" y1="30" x2="50" y2="30" stroke="#d8d8d0" stroke-width="1.2" stroke-dasharray="2.5,3"/><line x1="10" y1="42" x2="50" y2="42" stroke="#d8d8d0" stroke-width="1.2" stroke-dasharray="2.5,3"/><rect x="26" y="53" width="8" height="8" rx="1" fill="#f8f8f4" stroke="#c8c8c0" stroke-width="1"/><ellipse cx="47" cy="30" rx="3" ry="24" fill="#c0c0b8" opacity=".18"/></svg>`,
+frigorifico_velho:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gFR" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c8d8e8"/><stop offset="50%" stop-color="#e0ecf8"/><stop offset="100%" stop-color="#b0c8dc"/></linearGradient></defs><rect x="10" y="4" width="40" height="52" rx="6" fill="url(#gFR)" stroke="#90a8c0" stroke-width="2"/><rect x="44" y="4" width="6" height="52" rx="4" fill="#90a8c0" opacity=".3"/><rect x="10" y="22" width="40" height="3" rx="1.5" fill="#80a0b8"/><rect x="12" y="6" width="36" height="14" rx="4" fill="#d8eaf8" stroke="#90a8c0" stroke-width="1"/><rect x="12" y="25" width="36" height="28" rx="4" fill="#dceef8" stroke="#90a8c0" stroke-width="1"/><rect x="40" y="11" width="4" height="6" rx="2" fill="#8090a8"/><rect x="40" y="30" width="4" height="10" rx="2" fill="#8090a8"/><text x="24" y="17" text-anchor="middle" font-size="8" fill="#5080a0" font-family="sans-serif">❄</text><line x1="38" y1="7" x2="44" y2="13" stroke="#cc3333" stroke-width="2.5" stroke-linecap="round"/><line x1="44" y1="7" x2="38" y2="13" stroke="#cc3333" stroke-width="2.5" stroke-linecap="round"/><rect x="14" y="54" width="8" height="5" rx="2" fill="#7090a8"/><rect x="38" y="54" width="8" height="5" rx="2" fill="#7090a8"/></svg>`,
+fralda_usada:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gFU" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0f0f8"/><stop offset="100%" stop-color="#d8d8e8"/></linearGradient></defs><path d="M8,12 Q8,8 14,8 L46,8 Q52,8 52,12 L52,20 Q40,28 30,28 Q20,28 8,20 Z" fill="url(#gFU)" stroke="#b0b0c0" stroke-width="1.5"/><path d="M8,48 Q8,52 14,52 L46,52 Q52,52 52,48 L52,40 Q40,32 30,32 Q20,32 8,40 Z" fill="url(#gFU)" stroke="#b0b0c0" stroke-width="1.5"/><rect x="24" y="18" width="12" height="24" rx="4" fill="#e0e0f0" stroke="#b0b0c0" stroke-width="1"/><rect x="8" y="8" width="7" height="7" rx="2" fill="#3a88ff" opacity=".7"/><rect x="45" y="8" width="7" height="7" rx="2" fill="#3a88ff" opacity=".7"/><rect x="8" y="45" width="7" height="7" rx="2" fill="#3a88ff" opacity=".7"/><rect x="45" y="45" width="7" height="7" rx="2" fill="#3a88ff" opacity=".7"/></svg>`,
+chiclete:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gGM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff88bb"/><stop offset="100%" stop-color="#dd4488"/></linearGradient></defs><rect x="10" y="20" width="40" height="20" rx="8" fill="url(#gGM)" stroke="#bb2266" stroke-width="1.5"/><rect x="10" y="20" width="40" height="9" rx="8" fill="#ff99cc"/><rect x="10" y="26" width="40" height="4" fill="#ffaad8"/><line x1="22" y1="20" x2="22" y2="40" stroke="#bb2266" stroke-width="1.2" opacity=".4"/><line x1="38" y1="20" x2="38" y2="40" stroke="#bb2266" stroke-width="1.2" opacity=".4"/><rect x="10" y="20" width="12" height="20" rx="6" fill="white" opacity=".12"/><ellipse cx="30" cy="30" rx="6" ry="4" fill="white" opacity=".15"/></svg>`,
+guardanapo:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gNP" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f8f6f0"/><stop offset="100%" stop-color="#ede8dc"/></linearGradient></defs><path d="M12,14 Q10,8 18,8 L42,8 Q50,8 50,16 L48,46 Q48,52 40,52 L20,52 Q12,52 12,44 Z" fill="url(#gNP)" stroke="#d0c8b0" stroke-width="1.5"/><path d="M16,14 Q20,20 18,28 Q16,36 20,44" fill="none" stroke="#c8c0a8" stroke-width="1.2" stroke-linecap="round"/><path d="M30,10 Q34,16 30,24 Q26,32 30,44" fill="none" stroke="#c8c0a8" stroke-width="1.2" stroke-linecap="round"/><path d="M44,14 Q42,22 44,30 Q46,38 42,46" fill="none" stroke="#c8c0a8" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="30" cy="32" rx="8" ry="5" fill="#d0b080" opacity=".35"/><polygon points="42,8 50,8 50,18" fill="#d0c8b0" opacity=".6"/></svg>`,
+pilha:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBT" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c8a800"/><stop offset="40%" stop-color="#f0d020"/><stop offset="100%" stop-color="#a88800"/></linearGradient></defs><ellipse cx="30" cy="55" rx="13" ry="3" fill="#806000" opacity=".4"/><rect x="17" y="14" width="26" height="41" rx="5" fill="url(#gBT)" stroke="#907000" stroke-width="2"/><rect x="19" y="14" width="5" height="41" fill="white" opacity=".14" rx="2"/><rect x="24" y="7" width="12" height="9" rx="3" fill="#c0c0c0" stroke="#909090" stroke-width="1.8"/><rect x="27" y="4" width="6" height="5" rx="2" fill="#a0a0a0"/><ellipse cx="30" cy="55" rx="13" ry="3.5" fill="#a08000" opacity=".6"/><rect x="19" y="19" width="22" height="8" rx="2" fill="#dd2222"/><text x="30" y="25.5" text-anchor="middle" font-size="6" fill="white" font-weight="900" font-family="sans-serif">PILHA</text><text x="30" y="43" text-anchor="middle" font-size="11" fill="#705000" font-weight="900" font-family="sans-serif">AA</text></svg>`,
+bateria:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBTB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a3a3a"/><stop offset="100%" stop-color="#222"/></linearGradient></defs><ellipse cx="30" cy="53" rx="24" ry="4" fill="#111" opacity=".4"/><rect x="6" y="18" width="48" height="30" rx="6" fill="url(#gBTB)" stroke="#111" stroke-width="2"/><rect x="6" y="18" width="48" height="8" rx="6" fill="#404040"/><rect x="10" y="11" width="12" height="9" rx="3.5" fill="#dd2222" stroke="#aa0000" stroke-width="1.5"/><text x="16" y="18.5" text-anchor="middle" font-size="8" fill="white" font-weight="900" font-family="sans-serif">+</text><rect x="38" y="11" width="12" height="9" rx="3.5" fill="#2244cc" stroke="#1133aa" stroke-width="1.5"/><text x="44" y="18.5" text-anchor="middle" font-size="8" fill="white" font-weight="900" font-family="sans-serif">−</text><rect x="9" y="24" width="42" height="18" rx="4" fill="#1a1a1a"/><text x="30" y="34" text-anchor="middle" font-size="7" fill="#ddaa00" font-weight="900" font-family="sans-serif">BATERIA</text><text x="30" y="42" text-anchor="middle" font-size="7" fill="#888" font-family="sans-serif">12V</text><rect x="8" y="18" width="6" height="30" fill="white" opacity=".06" rx="3"/></svg>`,
+pilha_recarregavel:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gRB" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#1a6030"/><stop offset="40%" stop-color="#2a9040"/><stop offset="100%" stop-color="#1a5028"/></linearGradient></defs><ellipse cx="30" cy="55" rx="13" ry="3" fill="#104020" opacity=".4"/><rect x="17" y="14" width="26" height="41" rx="5" fill="url(#gRB)" stroke="#105020" stroke-width="2"/><rect x="24" y="7" width="12" height="9" rx="3" fill="#c0c0c0" stroke="#909090" stroke-width="1.8"/><rect x="27" y="4" width="6" height="5" rx="2" fill="#a0a0a0"/><rect x="19" y="14" width="4" height="41" fill="white" opacity=".12" rx="2"/><rect x="19" y="19" width="22" height="8" rx="2" fill="#44aa44"/><text x="30" y="25.5" text-anchor="middle" font-size="5" fill="white" font-weight="900" font-family="sans-serif">RECARG.</text><g transform="translate(30,38) scale(0.55)" fill="white" opacity=".8"><polygon points="0,-16 -10,-2 10,-2"/><polygon points="-14,4 -4,18 -18,18"/><polygon points="14,4 18,18 4,18"/></g><text x="30" y="51" text-anchor="middle" font-size="7" fill="#88ff88" font-weight="900" font-family="sans-serif">AAA</text></svg>`,
+};
+
+/* ══════════════════════ BIN SVG FACTORY ══════════════════════ */
+function makeBinSVG(b){
+  const c1=b.c1, dk=b.dk, c2=b.c2;
+  return `<svg viewBox="0 0 110 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- drop shadow -->
+    <ellipse cx="55" cy="174" rx="44" ry="5" fill="rgba(0,0,0,0.18)"/>
+
+    <!-- WHEELS — round, with tyre detail -->
+    <circle cx="22" cy="160" r="11" fill="#1a1a1a"/>
+    <circle cx="22" cy="160" r="6"  fill="#333"/>
+    <circle cx="22" cy="160" r="2.5" fill="#666"/>
+    <circle cx="88" cy="160" r="11" fill="#1a1a1a"/>
+    <circle cx="88" cy="160" r="6"  fill="#333"/>
+    <circle cx="88" cy="160" r="2.5" fill="#666"/>
+
+    <!-- BODY — tall rectangle with slight rounding -->
+    <rect x="4" y="34" width="102" height="118" rx="8" fill="${c1}"/>
+
+    <!-- body shine strip left -->
+    <rect x="8" y="38" width="14" height="110" rx="6" fill="white" opacity=".10"/>
+
+    <!-- horizontal ridge near bottom -->
+    <rect x="4" y="130" width="102" height="6" rx="3" fill="${dk}" opacity=".3"/>
+
+    <!-- LID — slightly wider, rounded top like real bin -->
+    <rect x="0" y="20" width="110" height="20" rx="8" fill="${dk}"/>
+    <!-- lid highlight -->
+    <rect x="4" y="22" width="102" height="7" rx="4" fill="white" opacity=".14"/>
+
+    <!-- HANDLE — arch on top of lid -->
+    <path d="M32,20 Q55,4 78,20"
+      fill="none" stroke="${dk}" stroke-width="8" stroke-linecap="round"/>
+    <!-- handle inner lighter -->
+    <path d="M32,20 Q55,6 78,20"
+      fill="none" stroke="${c2}" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+
+    <!-- ♻️ emoji large and centred -->
+    <text x="55" y="110" text-anchor="middle" dominant-baseline="middle"
+      font-size="58" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">♻️</text>
+
+    <!-- label on lid -->
+    <text x="55" y="35" text-anchor="middle" dominant-baseline="middle"
+      font-size="10.5" fill="white" font-weight="900"
+      font-family="Nunito,sans-serif" letter-spacing="0.5">${b.label}</text>
+  </svg>`;
+}
+
+/* ══════════════════════ STATE ══════════════════════ */
+let sOk=0,sErr=0,sPts=0,items=[],zoneCounts={},mistakes=[];
+let ghost=null,src=null,srcItem=null,ox=0,oy=0;
+let bubT,idleT,timerInterval,timeLeft=0,diff='easy',binFocus='all';
+const DIFF={easy:{n:10,time:0},medium:{n:13,time:120},hard:{n:16,time:90}};
+
+/* ══════════════════════ SPLASH ══════════════════════ */
+const DIFF_DESC={easy:'10 resíduos • sem limite de tempo',medium:'13 resíduos • 2 minutos',hard:'16 resíduos • 90 segundos'};
+function setSplashDiff(d){
+  diff=d;
+  document.querySelectorAll('.splash-diff-btn').forEach(b=>b.classList.toggle('active',b.dataset.d===d));
+  // sync with in-game diff buttons too
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.toggle('active',b.id==='d-'+d));
+  const desc=document.getElementById('splash-diff-desc');
+  if(desc)desc.textContent=DIFF_DESC[d]||'';
+}
+function showSplashStats(){
+  const st=loadStats();
+  const el=document.getElementById('splash-stats');
+  if(!el)return;
+  if(st.games===0){el.textContent='';return;}
+  el.textContent=`🎮 ${st.games} jogos  •  🏆 Melhor: ${st.bestScore} pts`;
+}
+function hideSplash(cb){
+  const s=document.getElementById('splash');
+  s.classList.add('hide');
+  setTimeout(()=>{s.style.display='none';if(cb)cb();},450);
+}
+function startFromSplash(){hideSplash(()=>{startGame();bub('Vamos reciclar! ♻️');say('Vamos reciclar! Arrasta cada resíduo para o ecoponto certo!');});}
+function learnFromSplash(){hideSplash(()=>showLearn());}
+
+/* ══════════════════════ MASCOT REACTIONS ══════════════════════ */
+function mascotReact(type){
+  const svg=document.getElementById('robot-svg');
+  const mouth=document.getElementById('vb-mouth');
+  if(!svg)return;
+  svg.classList.remove('react-happy','react-sad','react-win');
+  void svg.offsetWidth; // reflow to restart animation
+  if(type==='happy'){
+    svg.classList.add('react-happy');
+    if(mouth){mouth.setAttribute('d','M28,30 Q40,38 52,30');mouth.setAttribute('opacity','1');}
+    setTimeout(()=>{if(mouth){mouth.setAttribute('d','M30,32 Q40,37 50,32');mouth.setAttribute('opacity','0');}},800);
+  } else if(type==='sad'){
+    svg.classList.add('react-sad');
+    if(mouth){mouth.setAttribute('d','M30,36 Q40,31 50,36');mouth.setAttribute('opacity','1');}
+    setTimeout(()=>{if(mouth){mouth.setAttribute('d','M30,32 Q40,37 50,32');mouth.setAttribute('opacity','0');}},900);
+  } else if(type==='win'){
+    svg.classList.add('react-win');
+    if(mouth){mouth.setAttribute('d','M26,29 Q40,40 54,29');mouth.setAttribute('opacity','1');}
+    setTimeout(()=>{if(mouth){mouth.setAttribute('d','M30,32 Q40,37 50,32');mouth.setAttribute('opacity','0');}},900);
+  }
+}
+
+/* ══════════════════════ BIN FOCUS ══════════════════════ */
+function setBinFocus(b){
+  binFocus=b;
+  document.querySelectorAll('.chall-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.b===b);
+  });
+  startGame();
+  const label={all:'Todos os ecopontos!',blue:'Desafio Azul — Papel!',yellow:'Desafio Amarelo — Embalagens!',green:'Desafio Verde — Vidro!',black:'Desafio Preto — Lixo comum!',orange:'Desafio Pilhão — Pilhas!'};
+  bub(label[b]||'');
+}
+
+/* ══════════════════════ PERSIST ══════════════════════ */
+const SAVE_KEY='vanberto_stats';
+function loadStats(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'null')||{games:0,bestScore:0,totalOk:0,totalErr:0,weakItems:{}};}catch(e){return{games:0,bestScore:0,totalOk:0,totalErr:0,weakItems:{}};}}
+function saveStats(st){try{localStorage.setItem(SAVE_KEY,JSON.stringify(st));}catch(e){}}
+function recordGame(ok,err,pts,mistakeList){
+  const st=loadStats();
+  st.games++;
+  st.totalOk+=ok;
+  st.totalErr+=err;
+  if(pts>st.bestScore)st.bestScore=pts;
+  mistakeList.forEach(m=>{st.weakItems[m.item.key]=(st.weakItems[m.item.key]||0)+1;});
+  saveStats(st);
+  return st;
+}
+// get top N weak item keys
+function getWeakKeys(n=4){
+  const st=loadStats();
+  return Object.entries(st.weakItems).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]);
+}
+
+/* ══════════════════════ RENDER BINS ══════════════════════ */
+function renderBins(){
+  const grid=document.getElementById('zones-grid');grid.innerHTML='';
+  const visibleBins = binFocus==='all' ? BINS : BINS.filter(b=>b.id===binFocus);
+  // update grid columns for challenge mode
+  grid.style.gridTemplateColumns = binFocus==='all' ? '' : '1fr';
+  grid.style.maxWidth = binFocus==='all' ? '' : '320px';
+  visibleBins.forEach(b=>{
+    const z=document.createElement('div');z.className='bin-zone '+b.cls;z.id='zone-'+b.id;z.dataset.bin=b.id;
+    z.innerHTML=`<div class="bz-svg-wrap">${makeBinSVG(b)}</div><div class="bz-title">${b.title}</div><div class="bz-count" id="cnt-${b.id}">0 itens</div><div class="bz-fill-wrap"><div class="bz-fill-bar" id="fill-${b.id}"></div></div><div class="bz-cards" id="cards-${b.id}"></div>`;
+    grid.appendChild(z);
+  });
+}
+
+/* ══════════════════════ RENDER BANK ══════════════════════ */
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+
+function renderBank(){
+  const bank=document.getElementById('bank');bank.innerHTML='';
+  items.filter(it=>!it.placed).forEach((it,idx)=>{
+    const card=mkCard(it);
+    card.classList.add('entering');
+    card.style.animationDelay=(idx*.07)+'s';
+    bank.appendChild(card);
+  });
+}
+
+function mkCard(item){
+  const d=document.createElement('div');d.className='card';d.id='card-'+item.id;
+  const ic=ICONS[item.key]||'❓';
+  const isEmoji=ic.length>0&&!ic.trimStart().startsWith('<');
+  d.innerHTML=isEmoji
+    ?`<div class="card-emoji">${ic}</div><div class="card-name">${item.label}</div>`
+    :`<div class="card-svg">${ic}</div><div class="card-name">${item.label}</div>`;
+  d.addEventListener('mousedown',e=>{e.preventDefault();ensureAudio();sndItem(item.key);say(item.label);startDrag(d,e.clientX,e.clientY,item);document.addEventListener('mousemove',onMM);document.addEventListener('mouseup',onMU);});
+  d.addEventListener('touchstart',e=>{e.preventDefault();ensureAudio();sndItem(item.key);say(item.label);startDrag(d,e.touches[0].clientX,e.touches[0].clientY,item);document.addEventListener('touchmove',onTM,{passive:false});document.addEventListener('touchend',onTE,{passive:false});},{passive:false});
+  return d;
+}
+
+/* ══════════════════════ DRAG ══════════════════════ */
+function startDrag(el,cx,cy,item){
+  src=el;srcItem=item;
+  const r=el.getBoundingClientRect();ox=cx-r.left;oy=cy-r.top;
+  ghost=el.cloneNode(true);ghost.classList.add('ghost');
+  ghost.style.width=r.width+'px';ghost.style.height=r.height+'px';
+  document.body.appendChild(ghost);el.style.opacity='.2';moveG(cx,cy);
+}
+function moveG(cx,cy){
+  if(!ghost)return;
+  ghost.style.left=(cx-ox)+'px';ghost.style.top=(cy-oy)+'px';
+  document.querySelectorAll('.bin-zone').forEach(z=>{
+    const r=z.getBoundingClientRect();
+    z.classList.toggle('drag-over',cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom);
+  });
+}
+function onMM(e){moveG(e.clientX,e.clientY);}
+function onTM(e){e.preventDefault();moveG(e.touches[0].clientX,e.touches[0].clientY);}
+function onMU(e){dropG(e.clientX,e.clientY);document.removeEventListener('mousemove',onMM);document.removeEventListener('mouseup',onMU);}
+function onTE(e){const t=e.changedTouches[0];dropG(t.clientX,t.clientY);document.removeEventListener('touchmove',onTM);document.removeEventListener('touchend',onTE);}
+
+/* ══════════════════════ DROP ══════════════════════ */
+function dropG(cx,cy){
+  if(!ghost||!src)return;
+  ghost.remove();ghost=null;
+  document.querySelectorAll('.bin-zone').forEach(z=>z.classList.remove('drag-over'));
+  let tgt=null;
+  document.querySelectorAll('.bin-zone').forEach(z=>{const r=z.getBoundingClientRect();if(cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom)tgt=z;});
+  if(tgt){
+    const binId=tgt.dataset.bin;
+    if(binId===srcItem.bin){
+      // ✅ CORRECT — fly animation
+      const capturedSrc=src;const capturedItem=srcItem;
+      capturedSrc.style.opacity='0';capturedSrc.style.pointerEvents='none';
+      capturedItem.placed=true;
+      // clear any active hints
+      document.querySelectorAll('.hint-arrow').forEach(a=>a.remove());
+      document.querySelectorAll('.bin-zone.hint-glow').forEach(z=>z.classList.remove('hint-glow'));
+      sOk++;sPts+=100;zoneCounts[binId]=(zoneCounts[binId]||0)+1;
+      updateScore();
+      const pic=ICONS[capturedItem.key]||'';
+      const isPE=pic.length>0&&!pic.trimStart().startsWith('<');
+      const flyIcon=isPE?`<span style="font-size:1.6rem">${pic}</span>`:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">${pic.replace(/^<svg[^>]*>/,'').replace('</svg>','')}</svg>`;
+      flyToBin(capturedSrc, tgt, flyIcon, ()=>{
+        capturedSrc.remove();
+        const pc=document.createElement('div');pc.className='placed-card';
+        pc.innerHTML=`<div class="pc-icon">${isPE?pic:`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:26px">${pic.replace(/^<svg[^>]*>/,'').replace('</svg>','')}</svg>`}</div><div class="pc-name">${capturedItem.label}</div>`;
+        document.getElementById('cards-'+binId).appendChild(pc);
+        burstAt(tgt);
+      });
+      document.getElementById('cnt-'+binId).textContent=zoneCounts[binId]+' ite'+(zoneCounts[binId]===1?'m':'ns');
+      const binTotal=items.filter(it=>it.bin===binId).length;
+      const pct=binTotal>0?Math.min(100,Math.round(zoneCounts[binId]/binTotal*100)):0;
+      const fillBar=document.getElementById('fill-'+binId);
+      if(fillBar)fillBar.style.width=pct+'%';
+      sndItem(capturedItem.key);setTimeout(()=>{sndOk();sndBin(binId);},120);
+      mascotReact('happy');
+      const binEl=BINS.find(b=>b.id===binId);
+      const expl=EXPLANATIONS[capturedItem.key]||`✅ Correto! ${capturedItem.label} vai para o ${binEl.title}!`;
+      const fact=ITEM_FACTS[capturedItem.key]||'';
+      setExplain(expl+(fact?'<br><span style="color:#15803d;font-size:.78rem">💡 '+fact+'</span>':''),false);
+      const msg=OK_MSGS[~~(Math.random()*OK_MSGS.length)];
+      showToast(msg,false);bub(msg.split('!')[0]+'!');
+      say(expl);
+      setTimeout(()=>{ if(!muted&&fact) say(fact,.78); },2500);
+      tgt.classList.add('correct-flash');setTimeout(()=>tgt.classList.remove('correct-flash'),600);
+      try{navigator.vibrate&&navigator.vibrate([60,30,60]);}catch(e){}
+      if(items.every(it=>it.placed))setTimeout(winGame,900);
+    } else {
+      // ❌ WRONG
+      src.style.opacity='1';
+      src.classList.remove('wrong-shake','wrong-red');void src.offsetWidth;
+      src.classList.add('wrong-shake','wrong-red');
+      setTimeout(()=>src.classList.remove('wrong-shake','wrong-red'),1300);
+      sErr++;updateScore();
+      mistakes.push({item:srcItem,tried:binId});
+      // hint: animated arrow + glow on correct bin
+      const correctZone=document.getElementById('zone-'+srcItem.bin);
+      if(correctZone){
+        // remove any previous hints
+        document.querySelectorAll('.hint-arrow').forEach(a=>a.remove());
+        document.querySelectorAll('.bin-zone.hint-glow').forEach(z=>z.classList.remove('hint-glow'));
+        // add arrow above correct bin
+        const arrow=document.createElement('div');arrow.className='hint-arrow';arrow.textContent='👇';
+        correctZone.style.position='relative';correctZone.appendChild(arrow);
+        correctZone.classList.add('hint-glow');
+        // remove after 3s
+        setTimeout(()=>{arrow.remove();correctZone.classList.remove('hint-glow');},3000);
+      }
+      tgt.classList.add('wrong-flash');setTimeout(()=>tgt.classList.remove('wrong-flash'),500);
+      sndErr();
+      mascotReact('sad');
+      const porqueNao=getPorqueNao(srcItem.key,tgt.dataset.bin)||EXPLANATIONS[srcItem.key]||`❌ Ops! ${srcItem.label} não vai aí!`;
+      setExplain('<span style="font-size:.88rem">🤔 <b>Porque é que não?</b> '+porqueNao+'</span>',true);
+      const msg=ERR_MSGS[~~(Math.random()*ERR_MSGS.length)];
+      showToast(msg,true);bub(msg);
+      say(porqueNao);
+      try{navigator.vibrate&&navigator.vibrate([80,40,80]);}catch(e){}
+    }
+  } else {
+    src.style.opacity='1';
+  }
+  src=null;srcItem=null;
+}
+
+/* ══════════════════════ UI ══════════════════════ */
+const ITEM_FACTS={
+  jornal:'Os jornais são feitos de papel reciclado em 70%! Reciclar um jornal poupa muita água.',
+  caixa_cartao:'Uma caixa de cartão pode ser reciclada até 7 vezes antes de as fibras ficarem demasiado curtas!',
+  folha_papel:'Para fazer 1 kg de papel novo precisamos de 10 litros de água. Reciclar usa muito menos!',
+  caderno:'Os cadernos velhos transformam-se em papel reciclado para novas folhas e caixas!',
+  revista:'As revistas têm papel revestido que demora mais a reciclar, mas ainda assim vale a pena!',
+  envelope:'Um envelope de papel pode voltar a ser papel de escrita ou cartão de embalagem!',
+  livro_velho:'Um livro reciclado pode tornar-se em até 3 novos livros de bolso!',
+  saco_papel:'Sacos de papel são recicláveis e também se degradam muito mais rápido que os de plástico!',
+  lata_sumo:'O alumínio pode ser reciclado infinitamente! Uma lata reciclada volta à prateleira em 60 dias!',
+  garrafa_plastico:'Uma garrafa de plástico demora até 400 anos a degradar na natureza!',
+  frasco_shampoo:'Os frascos de plástico reciclados podem tornar-se em fibra para roupa de desporto!',
+  saco_plastico:'Portugal usa mais de 3 mil milhões de sacos de plástico por ano!',
+  lata_conserva:'As latas de metal são feitas de aço ou alumínio — ambos são 100% recicláveis!',
+  pacote_sumo:'Os pacotes de sumo são feitos de 3 materiais diferentes — plástico, papel e alumínio!',
+  garrafa_agua:'Reciclar plástico usa 88% menos energia do que produzir plástico novo!',
+  embalagem_plastico:'As embalagens plásticas têm um símbolo com um número que indica o tipo de plástico!',
+  frasco_comprimidos:'Os frascos de medicamentos vazios são embalagens e podem ser reciclados!',
+  balde_plastico:'Plástico reciclado pode tornar-se em bancos de jardim, tubagens e até estradas!',
+  copo_iogurte:'Portugal produz cada vez mais iogurtes com embalagens de plástico reciclado!',
+  garrafa_oleo:'As garrafas de plástico de azeite podem ser recicladas — mas esvaziá-las bem primeiro!',
+  caixa_leite:'As caixas de leite são feitas de cartão, plástico e alumínio — vão para o amarelo!',
+  copo_plastico:'Os copos de plástico descartáveis são um dos resíduos mais comuns nas praias!',
+  tabuleiro_plastico:'Os tabuleiros de plástico das refeições são recicláveis — limpa-os antes!',
+  lata_tinta:'Latas de metal vazias e limpas podem ser recicladas no ecoponto amarelo!',
+  garrafa_vidro:'Uma garrafa de vidro pode ser reciclada infinitamente sem perder qualidade!',
+  boiao_vidro:'Os boiões de vidro reciclados voltam a ser boiões em apenas 30 dias!',
+  frasco_mel:'O vidro é feito de areia — reciclar uma garrafa poupa areia suficiente para uma praia!',
+  garrafa_vinho:'Portugal é um dos maiores produtores de vinho do mundo — e recicla muitas garrafas!',
+  frasco_vidro_pequeno:'Frascos pequenos de vidro são tão recicláveis quanto os grandes!',
+  frasquinho_perfume:'Os frascos de perfume são de vidro de alta qualidade — perfeitos para reciclar!',
+  garrafa_cerveja:'Uma garrafa de vidro verde demora 4.000 anos a degradar se não for reciclada!',
+  restos_comida:'Os restos de comida podem ser compostos — transformam-se em adubo para plantas!',
+  casca_banana:'Uma casca de banana demora só 3-4 semanas a degradar — muito menos que plástico!',
+  lapis_partido:'Lápis são feitos de grafite e madeira — infelizmente não são recicláveis no ecoponto.',
+  penso_rapido:'Pensos rápidos têm materiais misturados que não permitem a reciclagem normal.',
+  papel_higienico:'Papel higiénico usado não pode ser reciclado — as fibras ficam demasiado contaminadas.',
+  escova_dentes:'Uma escova de dentes dura cerca de 3 meses. Existem escovas de bambu mais ecológicas!',
+  lampada:'As lâmpadas LED duram 25x mais que as tradicionais e poupam muita energia!',
+  esponja:'As esponjas de cozinha são feitas de materiais sintéticos que não se reciclam.',
+  chinelo:'Existem empresas que reciclam chinelos velhos para fazer pisos de parques infantis!',
+  espinha_peixe:'Os restos de peixe podem ser compostados e tornam-se num excelente fertilizante!',
+  sapato_velho:'Muitas marcas têm programas de reciclagem de sapatos — procura antes de deitar fora!',
+  rolo_cozinha:'O papel de cozinha usado absorve muita gordura e não pode ser reciclado.',
+  frigorifico_velho:'Frigoríficos velhos devem ir para o ecocentro — têm gases que precisam tratamento especial!',
+  fralda_usada:'Existem fraldas reutilizáveis que poupam até 1 tonelada de lixo por criança!',
+  chiclete:'A pastilha elástica moderna é feita de plástico sintético — pode demorar séculos a degradar!',
+  guardanapo:'Um guardanapo de tecido reutilizável substitui 2.000 guardanapos de papel por ano!',
+  pilha:'Uma pilha AA pode contaminar 400 litros de água se não for reciclada corretamente!',
+  bateria:'Uma bateria de carro contém chumbo e ácido — é perigosa e DEVE ir para o pilhão!',
+  pilha_recarregavel:'Uma pilha recarregável substitui até 1.000 pilhas normais durante a sua vida útil!',
+};
+
+/* "Porque é que não?" — specific wrong-bin explanations */
+const PORQUE_NAO={
+  /* item_key: { bin_tried: explanation } */
+  jornal:{yellow:'O jornal é feito de papel, não de plástico. O amarelo é só para embalagens!',green:'O jornal é papel, não vidro. O vidro é transparente e duro!',black:'O jornal é reciclável! Não desperdiças — vai para o azul!',orange:'O jornal não tem pilhas nem baterias. É papel — vai para o azul!'},
+  caixa_cartao:{yellow:'A caixa é de cartão, não plástico. Embalagens de plástico é que vão para o amarelo!',green:'Cartão não é vidro! O verde é só para garrafas e frascos de vidro.',black:'O cartão é reciclável! Vai para o azul e ajuda a poupar árvores!',orange:'Cartão não é uma pilha! Vai para o azul.'},
+  lata_sumo:{blue:'As latas são de metal, não de papel! O azul é só para papel e cartão.',green:'Latas de metal não são vidro! O verde é para garrafas e frascos.',black:'As latas são recicláveis — não as deites no lixo! Vão para o amarelo.',orange:'Uma lata de sumo não é uma pilha. É metal — vai para o amarelo!'},
+  garrafa_plastico:{blue:'Plástico não é papel! O azul é só para papel e cartão.',green:'A garrafa é de plástico, não de vidro! Tenta bater nela — não faz aquele som cristalino.',black:'A garrafa de plástico é reciclável! Vai para o amarelo.',orange:'Uma garrafa de plástico não é uma pilha. Vai para o amarelo!'},
+  garrafa_vidro:{blue:'Vidro não é papel! O azul é só para papel e cartão.',yellow:'Vidro não é uma embalagem de plástico! O verde é o lar do vidro.',black:'O vidro é reciclável — não o deites no lixo! Vai para o verde.',orange:'Uma garrafa de vidro não é uma pilha. Vai para o verde!'},
+  garrafa_agua:{blue:'A garrafa de água é de plástico, não de papel!',green:'É plástico, não vidro! Experimenta esmagar — vidro não se esmaga assim.',black:'A garrafa de plástico é reciclável! Vai para o amarelo.',orange:'Uma garrafa de água não é uma pilha. É plástico — amarelo!'},
+  pilha:{blue:'As pilhas não são papel! E são perigosas — precisam do pilhão laranja.',yellow:'As pilhas não são embalagens de plástico! São tóxicas — vão para o pilhão laranja.',green:'As pilhas não são vidro! São perigosas — vão SEMPRE para o pilhão laranja.',black:'NUNCA deites pilhas no lixo comum — contaminam a terra e a água! Vão para o laranja.'},
+  bateria:{blue:'A bateria não é papel!',yellow:'A bateria não é uma embalagem de plástico!',green:'A bateria não é de vidro!',black:'NUNCA deites baterias no lixo — têm chumbo e ácido perigosos! Vão para o pilhão laranja.'},
+  restos_comida:{blue:'Restos de comida estragam o papel reciclável! Vão para o lixo comum.',yellow:'Restos de comida não são embalagens! Vão para o lixo comum ou composto.',green:'Comida no ecoponto de vidro? Vai estragar tudo! Lixo comum.',orange:'Restos de comida não são pilhas! Vão para o lixo comum.'},
+  lampada:{blue:'Lâmpadas não são papel!',yellow:'Lâmpadas não são embalagens de plástico!',green:'Atenção! Lâmpadas NÃO vão para o vidro — têm materiais perigosos. Vão para o lixo ou ecocentro.',orange:'Lâmpadas não são pilhas! Vão para o lixo comum ou ecocentro.'},
+};
+
+function getPorqueNao(itemKey, binTried){
+  const item = ALL_ITEMS.find(i=>i.key===itemKey);
+  if(!item) return null;
+  const correct = BINS.find(b=>b.id===item.bin);
+  // specific explanation
+  if(PORQUE_NAO[itemKey] && PORQUE_NAO[itemKey][binTried]){
+    return PORQUE_NAO[itemKey][binTried] + ` ✅ Vai para o ${correct?.title||'ecoponto certo'}!`;
+  }
+  // generic fallback
+  const tried = BINS.find(b=>b.id===binTried);
+  return `${item.label} não vai para o ${tried?.title||'esse ecoponto'}! Vai para o ${correct?.title||'ecoponto certo'} ✅`;
+}
+
+const OK_MSGS=['🌟 Muito bem!','✅ Correto! Parabéns!','♻️ Perfeito!','👏 Excelente!','🌍 O ambiente agradece!','🎉 Boa!'];
+const ERR_MSGS=['❌ Ops! Tenta outro!','🤔 Não é esse ecoponto!','💭 Pensa bem!','🔍 Olha com atenção!'];
+const IDLE=['Reciclar é fixe! ♻️','Onde vai este? 🤔','O planeta precisa de ti! 🌍','Vai lá! 💪','Separa bem o lixo!','Já sabes onde vai? 😊'];
+
+function updateScore(){
+  document.getElementById('sOk').textContent=sOk;
+  document.getElementById('sErr').textContent=sErr;
+  document.getElementById('sPts').textContent=sPts;
+}
+function setExplain(msg,isErr){
+  const el=document.getElementById('explain-bar');
+  el.innerHTML=msg;el.className='explain-bar'+(isErr?' err':'');
+}
+function showToast(msg,isErr){
+  const t=document.getElementById('feedback-toast');
+  t.textContent=msg;t.style.color=isErr?'#cc0000':'#15803d';
+  t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000);
+}
+function bub(msg){
+  const el=document.getElementById('bubble');el.textContent=msg;el.classList.add('show');
+  clearTimeout(bubT);bubT=setTimeout(()=>el.classList.remove('show'),3800);
+}
+function schedIdle(){clearTimeout(idleT);idleT=setTimeout(()=>{bub(IDLE[~~(Math.random()*IDLE.length)]);schedIdle();},9000+Math.random()*6000);}
+
+/* ══════════════════════ TIMER ══════════════════════ */
+function startTimer(){
+  clearInterval(timerInterval);
+  const cfg=DIFF[diff];
+  if(!cfg.time){document.getElementById('timer-pill').textContent='⏱️ Sem limite';return;}
+  timeLeft=cfg.time;updateTimerUI();
+  timerInterval=setInterval(()=>{
+    timeLeft--;updateTimerUI();
+    if(timeLeft<=0){clearInterval(timerInterval);winGame(true);}
+  },1000);
+}
+function updateTimerUI(){
+  const el=document.getElementById('timer-pill');
+  const m=String(~~(timeLeft/60)).padStart(2,'0'),s=String(timeLeft%60).padStart(2,'0');
+  el.textContent=`⏱️ ${m}:${s}`;
+  el.className='timer-pill'+(timeLeft<=15?' urgent':'');
+}
+function setDiff(d){
+  diff=d;['easy','medium','hard'].forEach(x=>document.getElementById('d-'+x).classList.toggle('active',x===d));
+  startGame();
+}
+
+/* ══════════════════════ WIN ══════════════════════ */
+function winGame(timeUp=false){
+  clearInterval(timerInterval);
+  const total=sOk+sErr;const pct=total>0?sOk/total:1;
+  let stars='⭐',sub='Continua a praticar!',icons='💪♻️🌱';
+  if(timeUp&&pct<1)sub='O tempo acabou! Pratica mais!';
+  else if(pct===1){stars='⭐⭐⭐';sub='Sem erros! És um campeão!';icons='🎉🏆🎊';}
+  else if(pct>=0.7){stars='⭐⭐';sub='Muito bem! Quase perfeito!';icons='🎉🌍♻️';}
+  document.getElementById('wIcons').textContent=icons;
+  document.getElementById('wStars').textContent=stars;
+  document.getElementById('wSub').textContent=sub;
+  document.getElementById('wScore').textContent=`⭐ ${sPts} pontos · ✅ ${sOk} · ❌ ${sErr}`;
+  document.getElementById('wFact').textContent='💡 '+FACTS[~~(Math.random()*FACTS.length)];
+  // bins summary
+  const wb=document.getElementById('wBins');wb.innerHTML='';
+  BINS.forEach(b=>{const d=document.createElement('div');d.className='win-bin '+b.cls;d.innerHTML=`<div style="width:36px;height:60px;display:flex;align-items:center;justify-content:center;">${makeBinSVG(b)}</div><div style="font-size:.72rem;font-weight:900;">${b.title}</div><div style="font-size:.65rem;opacity:.7">${zoneCounts[b.id]||0} itens</div>`;wb.appendChild(d);});
+  // mistakes
+  const wm=document.getElementById('wMistakes');wm.innerHTML='';
+  if(mistakes.length>0){
+    wm.innerHTML='<h4>❌ O que errei:</h4>';
+    const seen=new Set();
+    mistakes.forEach(m=>{
+      if(seen.has(m.item.key))return;seen.add(m.item.key);
+      const correctBin=BINS.find(b=>b.id===m.item.bin);
+      const triedBin=BINS.find(b=>b.id===m.tried);
+      const el=document.createElement('div');el.className='win-mistake-item';
+      const ic=ICONS[m.item.key]||'';
+      const isE=ic.length>0&&!ic.trimStart().startsWith('<');
+      el.innerHTML=`<span style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${isE?`<span style="font-size:1.4rem">${ic}</span>`:ic}</span><span>${m.item.label} → <b>${correctBin?.title||'?'}</b> (não ${triedBin?.title||'?'})</span>`;
+      wm.appendChild(el);
+    });
+  }
+  document.getElementById('win-overlay').classList.add('show');
+  recordGame(sOk,sErr,sPts,mistakes);
+  updateStatsBar();
+  sndWin();fullBurst();mascotReact('win');
+  setTimeout(()=>say('Parabéns!! Separaste todos os resíduos! És incrível!'),600);
+  try{navigator.vibrate&&navigator.vibrate([100,50,100,50,200]);}catch(e){}
+  bub('Parabéns!! 🎉🏆');
+}
+
+/* ══════════════════════ LEARN MODE ══════════════════════ */
+function showLearn(){
+  document.getElementById('win-overlay').classList.remove('show');
+  const overlay=document.getElementById('learn-overlay');overlay.classList.add('show');
+  const grid=document.getElementById('learn-grid');grid.innerHTML='';
+  BINS.forEach(b=>{
+    const d=document.createElement('div');d.className='learn-bin '+b.cls;
+    d.innerHTML=`<div style="width:40px;height:66px;display:flex;align-items:center;justify-content:center;">${makeBinSVG(b)}</div><div class="learn-bin-title">${b.title}</div>`;
+    d.onclick=()=>{
+      const simHTML = b.examples.map(e=>`<span class="sim-item">${e}</span>`).join('');
+      const naoHTML = b.nao.map(e=>`<span class="nao-item">${e}</span>`).join('');
+      document.getElementById('learn-detail').innerHTML=`
+        <div class="learn-cols">
+          <div class="learn-col sim-col">
+            <div class="learn-col-title sim-title">DEPOSITAR</div>
+            ${simHTML}
+          </div>
+          <div class="learn-col nao-col">
+            <div class="learn-col-title nao-title">NÃO DEPOSITAR</div>
+            ${naoHTML}
+          </div>
+        </div>
+        <div class="learn-fact">💡 ${b.fact}</div>`;
+      const txt = b.title+'. Podes depositar: '+b.examples.slice(0,3).join(', ')+'. Não deposites: '+b.nao.slice(0,2).join(', ')+'.';
+      say(txt);
+    };
+    grid.appendChild(d);
+  });
+  document.getElementById('learn-detail').innerHTML='<div style="text-align:center;color:#888;font-size:.85rem;padding:.5rem">👆 Clica num ecoponto para ver o que vai lá!</div>';
+}
+function closeLearн(){document.getElementById('learn-overlay').classList.remove('show');startGame();}
+
+/* ══════════════════════ CONFETTI ══════════════════════ */
+const CV=document.getElementById('confetti'),CTX=CV.getContext('2d');
+let pts=[],raf=null;
+
+/* Thematic shapes: each is a small draw function */
+const THEMES=[
+  // leaf/paper scrap
+  (c,x,y,s,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#93c5fd';c.fillRect(-s,-s*.6,s*2,s*1.2);c.restore();},
+  // bottle shape
+  (c,x,y,s,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#4ade80';c.fillRect(-s*.3,-s,s*.6,s*.4);c.beginPath();c.arc(0,s*.2,s*.55,0,Math.PI*2);c.fill();c.restore();},
+  // can cylinder
+  (c,x,y,s,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#fbbf24';c.beginPath();c.ellipse(0,-s*.5,s*.4,s*.15,0,0,Math.PI*2);c.fill();c.fillRect(-s*.4,-s*.5,s*.8,s);c.beginPath();c.ellipse(0,s*.5,s*.4,s*.15,0,0,Math.PI*2);c.fill();c.restore();},
+  // star
+  (c,x,y,s,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#f97316';c.beginPath();for(let i=0;i<5;i++){c.lineTo(Math.cos((i*4*Math.PI/5)-Math.PI/2)*s,Math.sin((i*4*Math.PI/5)-Math.PI/2)*s);}c.closePath();c.fill();c.restore();},
+  // small square
+  (c,x,y,s,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#a855f7';c.fillRect(-s,-s,s*2,s*2);c.restore();},
+  // recycling triangle
+  (c,x,y,s,a)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle='#22c55e';c.beginPath();c.moveTo(0,-s);c.lineTo(s*.87,s*.5);c.lineTo(-s*.87,s*.5);c.closePath();c.fill();c.restore();},
+];
+
+function resize(){CV.width=innerWidth;CV.height=innerHeight;}window.addEventListener('resize',resize);resize();
+
+function burst(x,y,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,sp=Math.random()*7+2;
+    pts.push({
+      x,y,
+      vx:Math.cos(a)*sp*1.5,vy:Math.sin(a)*sp-5,
+      s:5+Math.random()*7,
+      rot:Math.random()*Math.PI*2,
+      rv:(Math.random()-.5)*.25,
+      life:1,
+      shape:~~(Math.random()*THEMES.length)
+    });
+  }
+  if(!raf)drawC();
+}
+function burstAt(el){if(!el)return;const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,22);}
+function fullBurst(){for(let i=0;i<10;i++)setTimeout(()=>burst(Math.random()*CV.width,Math.random()*CV.height*.5,35),i*130);}
+function drawC(){
+  CTX.clearRect(0,0,CV.width,CV.height);
+  pts=pts.filter(p=>p.life>.01);
+  pts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.34;
+    p.rot+=p.rv;p.life-=.016;
+    CTX.globalAlpha=p.life;
+    THEMES[p.shape](CTX,p.x,p.y,p.s,p.rot);
+  });
+  CTX.globalAlpha=1;
+  raf=pts.length?requestAnimationFrame(drawC):null;
+}
+
+/* ══════════════════════ START ══════════════════════ */
+document.getElementById('robot-svg').addEventListener('click',()=>bub(IDLE[~~(Math.random()*IDLE.length)]));
+document.getElementById('btnReplay').addEventListener('click',()=>{document.getElementById('win-overlay').classList.remove('show');startGame();});
+
+function startGame(){
+  clearInterval(timerInterval);
+  sOk=0;sErr=0;sPts=0;zoneCounts={};mistakes=[];
+  document.querySelectorAll('.hint-arrow').forEach(a=>a.remove());
+  document.querySelectorAll('.bin-zone.hint-glow').forEach(z=>z.classList.remove('hint-glow'));
+  const cfg=DIFF[diff];
+  const weakKeys=getWeakKeys(4);
+  // filter items by bin focus
+  const pool_src = binFocus==='all' ? ALL_ITEMS : ALL_ITEMS.filter(it=>it.bin===binFocus);
+  const focusBins = binFocus==='all' ? BINS : BINS.filter(b=>b.id===binFocus);
+  const byBin={};focusBins.forEach(b=>byBin[b.id]=shuffle(pool_src.filter(it=>it.bin===b.id)));
+  const guaranteed=focusBins.map(b=>byBin[b.id][0]).filter(Boolean);
+  const usedKeys=new Set(guaranteed.map(it=>it.key));
+  const weakExtras=pool_src.filter(it=>weakKeys.includes(it.key)&&!usedKeys.has(it.key));
+  weakExtras.forEach(it=>usedKeys.add(it.key));
+  const rest=shuffle(pool_src.filter(it=>!usedKeys.has(it.key)));
+  const pool=shuffle([...guaranteed,...weakExtras,...rest]);
+  const n = binFocus==='all' ? cfg.n : Math.min(cfg.n, pool_src.length);
+  const picked=pool.slice(0,n);
+  items=picked.map((it,i)=>({...it,id:'i'+i,placed:false}));
+  updateScore();renderBins();renderBank();updateStatsBar();
+  const focusLabel = binFocus==='all' ? '' : ` — só ${BINS.find(b=>b.id===binFocus)?.title||''}`;
+  setExplain(`💡 Arrasta um resíduo para o ecoponto certo${focusLabel}!`,false);
+  document.getElementById('feedback-toast').classList.remove('show');
+  startTimer();schedIdle();
+}
+
+function flyToBin(cardEl, binZoneEl, iconHTML, onDone){
+  const cR=cardEl.getBoundingClientRect();
+  const bR=binZoneEl.getBoundingClientRect();
+  const size=Math.min(cR.width,cR.height,52);
+  const fly=document.createElement('div');
+  fly.className='fly-item';
+  fly.style.cssText=`width:${size}px;height:${size}px;left:${cR.left+cR.width/2-size/2}px;top:${cR.top+cR.height/2-size/2}px;`;
+  fly.innerHTML=`<div style="width:${size*.75}px;height:${size*.75}px;display:flex;align-items:center;justify-content:center;">${iconHTML}</div>`;
+  // target = top center of bin
+  const tx=bR.left+bR.width/2-size/2;
+  const ty=bR.top+10;
+  const ex=tx-(cR.left+cR.width/2-size/2);
+  const ey=ty-(cR.top+cR.height/2-size/2);
+  // mid arc point — above midpoint
+  const mx=ex*0.5+(Math.random()-.5)*60;
+  const my=Math.min(-80, ey*0.4-60);
+  const rot=(Math.random()>.5?1:-1)*(15+Math.random()*20);
+  const dur=0.52;
+  fly.style.setProperty('--fly-ex',ex+'px');
+  fly.style.setProperty('--fly-ey',ey+'px');
+  fly.style.setProperty('--fly-mx',mx+'px');
+  fly.style.setProperty('--fly-my',my+'px');
+  fly.style.setProperty('--fly-rot',rot+'deg');
+  fly.style.setProperty('--fly-dur',dur+'s');
+  document.body.appendChild(fly);
+  // lid open effect on bin
+  binZoneEl.classList.add('lid-open');
+  setTimeout(()=>binZoneEl.classList.remove('lid-open'),600);
+  fly.addEventListener('animationend',()=>{fly.remove();onDone();});
+}
+
+function updateStatsBar(){
+  const st=loadStats();
+  const el=document.getElementById('stats-bar');
+  if(!el)return;
+  if(st.games===0){el.style.display='none';return;}
+  el.style.display='flex';
+  el.innerHTML=`<span>🎮 ${st.games} jog${st.games===1?'o':'os'}</span><span>🏆 Melhor: ${st.bestScore} pts</span><span>♻️ ${st.totalOk} certos</span>`;
+}
+
+window.addEventListener('load',()=>{
+  showSplashStats();
+  updateStatsBar();
+  setTimeout(()=>bub('Olá! 😊 Vamos reciclar? ♻️'),700);
+});
+</script>
+</body>
+</html>
