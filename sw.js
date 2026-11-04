@@ -1,6 +1,6 @@
 // Service worker: guarda o jogo para funcionar sem internet.
 // Quando mudares o jogo, aumenta o número da versão (v1 -> v2).
-const CACHE = 'reciclagem-v1';
+const CACHE = 'reciclagem-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
