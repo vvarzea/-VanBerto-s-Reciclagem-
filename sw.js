@@ -1,6 +1,6 @@
 // Service worker: guarda o jogo para funcionar sem internet.
 // Quando mudares o jogo, aumenta o número da versão (v1 -> v2).
-const CACHE = 'reciclagem-v6';
+const CACHE = 'reciclagem-v7';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
   './fonts/fredoka-one-latin-400-normal.woff2', './fonts/chewy-latin-400-normal.woff2',
   './fonts/nunito-latin-700-normal.woff2', './fonts/nunito-latin-800-normal.woff2', './fonts/nunito-latin-900-normal.woff2'];
