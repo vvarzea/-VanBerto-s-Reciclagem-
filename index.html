@@ -361,6 +361,11 @@ header .diff-bar button{height:32px;display:inline-flex;align-items:center;justi
   .dip-title{font-size:2.8rem;}.dip-name{font-size:3rem;}.dip-text{font-size:1.2rem;}.dip-stars{font-size:3rem;}.dip-emoji{font-size:2.4rem;}.dip-foot{margin-top:2.5rem;font-size:1rem;}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
+
+/* BOTÃO INSTALAR */
+#install-btn{display:none;position:fixed;left:.8rem;bottom:calc(.9rem + env(safe-area-inset-bottom,0px));z-index:300;font-family:'Fredoka One',cursive;font-size:.95rem;color:#fff;background:#16a34a;border:3px solid #0f2a1c;border-radius:50px;padding:.45rem 1rem;box-shadow:3px 3px 0 #0f2a1c;cursor:pointer;}
+#install-btn:hover{background:#15803d;}
+#install-btn:focus-visible{outline:3px solid #f59e0b;outline-offset:3px;}
 </style>
 </head>
 <body class="splash-on">
@@ -2009,6 +2014,23 @@ function continueSaved(){
 window.addEventListener('pagehide',()=>{try{saveGame();}catch(e){}});
 
 if("serviceWorker" in navigator&&/^https?:/.test(location.protocol)){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+
+/* ── Instalar a aplicação (PWA) ── */
+(function(){
+  const btn=document.getElementById('install-btn'); if(!btn)return;
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  if(standalone)return;
+  let deferred=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;btn.style.display='block';});
+  window.addEventListener('appinstalled',()=>{btn.style.display='none';deferred=null;});
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  if(ios)btn.style.display='block';
+  btn.addEventListener('click',async()=>{
+    if(deferred){deferred.prompt();try{await deferred.userChoice;}catch(e){}deferred=null;btn.style.display='none';}
+    else if(ios){alert('Para instalar: toca no botão de partilhar (quadrado com seta) e escolhe "Adicionar ao ecrã principal".');}
+  });
+})();
 </script>
+<button id="install-btn" type="button" aria-label="Instalar a aplicação">📲 Instalar</button>
 </body>
 </html>
