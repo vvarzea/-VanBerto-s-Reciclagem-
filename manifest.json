@@ -1,7 +1,13 @@
 {
   "name": "Reciclagem — Jogo da Reciclagem",
   "short_name": "Reciclagem",
+  "id": "./",
   "description": "Aprende a separar os resíduos a brincar!",
+  "categories": [
+    "education",
+    "games",
+    "kids"
+  ],
   "lang": "pt-PT",
   "start_url": "./",
   "scope": "./",
