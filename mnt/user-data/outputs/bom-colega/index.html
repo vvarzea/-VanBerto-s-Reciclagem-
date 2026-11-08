@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#ff9a3d"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<title>VanBerto's – Como ser um bom colega</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden}
+body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;transition:background .4s}
+.s0{background:radial-gradient(circle at top,#38bdf8,#020617 65%)}
+.s1{background:radial-gradient(circle at top,#22c55e,#052e16 65%)}
+.s2{background:radial-gradient(circle at top,#4f46e5,#020617 65%)}
+.s3{background:radial-gradient(circle at top,#a855f7,#1e1b4b 65%)}
+.s4{background:radial-gradient(circle at top,#0ea5e9,#0f172a 65%)}
+.s5{background:radial-gradient(circle at top,#fb7185,#4a044e 65%)}
+.s6{background:radial-gradient(circle at top,#ef4444,#450a0a 65%)}
+.s7{background:radial-gradient(circle at top,#facc15,#78350f 65%)}
+.sf{background:radial-gradient(circle at top,#22c55e,#14532d 65%)}
+.star,.meteor,.confetti{position:fixed;pointer-events:none;z-index:9999}
+.star{top:-10px;background:#fff;border-radius:50%;animation:fall linear forwards,tw ease-in-out infinite}
+@keyframes fall{to{transform:translateY(110vh)}}
+@keyframes tw{0%,100%{opacity:.2}50%{opacity:1}}
+.meteor{top:-20px;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#facc15,#f97316);box-shadow:0 0 10px #facc15;animation:met linear forwards}
+@keyframes met{to{transform:translate3d(-80vw,110vh,0)}}
+.confetti{width:8px;height:14px;border-radius:2px;top:-10px;animation:conf linear forwards}
+@keyframes conf{to{transform:translate3d(0,110vh,0) rotate(360deg)}}
+#game{width:100%;max-width:960px;margin:16px;padding:18px 20px 14px;background:rgba(248,250,252,.96);border-radius:24px;box-shadow:0 16px 40px rgba(15,23,42,.55);position:relative;z-index:2}
+#bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+#fill{height:100%;width:0;background:linear-gradient(90deg,#22c55e,#0ea5e9);transition:width .3s}
+#top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0}
+#prog{font-weight:700;color:#0f172a;font-size:.9rem}
+.box{display:inline-block;background:linear-gradient(135deg,#eef2ff,#e0f2fe);border-radius:99px;padding:5px 12px;font-size:.9rem;margin-left:6px;box-shadow:0 2px 6px rgba(15,23,42,.12)}
+#snd,#vz{border:0;background:#e0e7ff;border-radius:99px;padding:6px 12px;font-size:.85rem;cursor:pointer;margin-left:6px}
+#hero{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:6px 0}
+#vb{width:130px;flex:none;filter:drop-shadow(0 0 8px rgba(125,211,252,.7))}
+#vb canvas{width:100%;height:auto;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-7px)}}
+.vb-eyelid{transform-origin:40px 23px;animation:blink 5s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+.vb-arm{transform-origin:63px 44px;animation:wave 1.6s ease-in-out infinite}
+@keyframes wave{0%,50%,100%{transform:rotate(0)}25%,75%{transform:rotate(-16deg)}}
+#vb.glow canvas{animation:glow .45s}
+#vb.shake canvas{animation:shake .3s}
+#vb.dance canvas{animation:dance .9s}
+@keyframes glow{50%{filter:drop-shadow(0 0 18px #7dd3fc);transform:scale(1.08)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes dance{15%{transform:translateX(-8px) rotate(-10deg)}30%{transform:translateX(8px) rotate(8deg)}45%{transform:translateX(-6px) skewX(-10deg)}60%{transform:translateX(6px) skewX(10deg)}80%{transform:translateX(-4px) rotate(-8deg)}}
+#talk{flex:1;min-width:220px;max-width:560px;text-align:left}
+#zone{font-size:.8rem;letter-spacing:.12em;color:#6b7280;text-transform:uppercase}
+#title{font-size:1.35rem;font-weight:800;color:#020617;margin:2px 0}
+#fala{background:#e0f2fe;border-radius:16px;padding:10px 14px;color:#0f172a;font-size:1rem}
+#mission{background:radial-gradient(circle at top left,#e5edff,#fff 60%);border-radius:18px;padding:12px;min-height:200px;margin-top:8px;animation:in .35s}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.panel{background:#fff;border-radius:16px;padding:10px;box-shadow:0 4px 12px rgba(15,23,42,.1)}
+.pt{font-weight:700;margin-bottom:6px;color:#111827}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}
+.tag{display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:110px;padding:8px 14px;border-radius:14px;border:2px solid transparent;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.15);cursor:pointer;font-size:1rem;text-align:center;user-select:none;transition:transform .12s}
+.tag:hover{transform:translateY(-1px)}
+.selected{border-color:#4f46e5;background:#e0e7ff}
+.correct{border-color:#16a34a;background:#dcfce7}
+.wrong{border-color:#dc2626;background:#fee2e2;animation:shake .25s}
+.disabled{opacity:.6;pointer-events:none}
+.stmt{margin-bottom:8px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+#fb{min-height:26px;margin-top:8px;font-weight:700;text-align:center}
+#fb.ok{color:#16a34a}#fb.err{color:#dc2626}
+.btn{margin:10px 4px 0;padding:11px 22px;border:0;border-radius:99px;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(37,99,235,.5)}
+#ctrl{text-align:center}
+.final{text-align:center;padding:16px}
+.final .big{font-size:3rem}
+#credit{text-align:center;margin-top:12px;font-size:.85rem;color:#4b5563}
+@media(max-width:600px){#game{margin:8px;padding:12px}#vb{width:100px}#talk{text-align:center}#fvb{width:64px}#fbub{max-width:140px;font-size:.72rem;padding:5px 8px}#fname{font-size:.75rem}}
+@media(prefers-reduced-motion:reduce){.star,.meteor{display:none}}
+.tag{font:inherit;color:#0f172a}
+.tag:focus-visible,#fvb:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+body{padding-bottom:120px}
+#pn{font:inherit;font-size:1.1rem;padding:10px 14px;border-radius:12px;border:2px solid #4f46e5;text-align:center;margin:8px 0;max-width:100%}
+.rev{background:#fef3c7;border-radius:12px;padding:8px 12px;margin:8px auto;max-width:520px;font-size:.95rem}
+#fw{position:fixed;bottom:.6rem;right:.8rem;z-index:70;display:flex;flex-direction:column;align-items:center;gap:2px}
+#fvb{width:clamp(70px,9vw,96px);height:auto;cursor:pointer;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 12px #7dd3fc)}
+#fvb.glow{animation:glow .45s}#fvb.shake{animation:shake .3s}#fvb.dance{animation:dance .9s}
+#fbub{position:relative;background:linear-gradient(135deg,#dcebff,#fff);border:3px solid #0f172a;border-radius:16px;padding:6px 10px;box-shadow:3px 3px 0 #0f172a;font:700 .8rem "Trebuchet MS",sans-serif;color:#0f172a;max-width:170px;text-align:center;opacity:0;transform:translateY(-6px) scale(.88);transition:opacity .35s,transform .35s;margin-bottom:12px;pointer-events:none}
+#fbub.show{opacity:1;transform:none}
+#fbub::after{content:"";position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);border:9px solid transparent;border-top:12px solid #0f172a;border-bottom:0}
+#fname{font-weight:800;font-size:.85rem;color:#fde047;text-shadow:0 1px 6px #000;max-width:150px;text-align:center;overflow-wrap:anywhere}
+#talk{max-width:640px;margin:0 auto;text-align:center}#hero{display:block}
+#fw{touch-action:none;cursor:grab;user-select:none}
+body{padding-bottom:130px}
+.it{touch-action:none;cursor:grab}
+.ghost{position:fixed;z-index:10000;pointer-events:none;transform:translate(-50%,-50%) scale(1.06);min-width:0;opacity:.95;box-shadow:0 10px 24px rgba(15,23,42,.4);border-color:#4f46e5}
+.dragging{opacity:.35}
+.tgt.over{border-color:#4f46e5;background:#e0e7ff;transform:scale(1.05)}
+.sticky{position:sticky;top:8px;align-self:start}
+.sticky .row{flex-direction:column;align-items:stretch}
+.tgt{flex-direction:column;align-items:stretch;width:100%;min-height:72px}
+.tgt .lab{font-weight:700}
+.in{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
+.chip{background:#dcfce7;border:1px solid #16a34a;border-radius:10px;padding:3px 8px;font-size:.8rem;animation:popc .25s}
+@keyframes popc{from{transform:scale(.5);opacity:0}}
+#vz{border:0;background:#e0e7ff;border-radius:99px;padding:6px 12px;font-size:.85rem;cursor:pointer;margin-left:6px}
+.lvh{font-size:.85rem;color:#4b5563}
+#dipl{position:fixed;inset:0;z-index:20000;background:#fff;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;color:#0f172a}
+.dp{border:10px double #b45309;padding:24px 32px;text-align:center;max-width:760px;width:100%;background:#fffbeb}
+.dpb{font-size:4rem}.dp h1{font-size:2.4rem;margin:.2em 0;color:#1d4ed8}.sig{margin-top:20px;color:#4b5563}
+@media(max-width:600px){.cols{grid-template-columns:1fr 1fr}.tag{min-width:0;padding:8px;font-size:.92rem}.dp{padding:14px}}
+@media print{body>*:not(#dipl){display:none!important}body{background:#fff!important;display:block}#dipl{position:static;display:block}.np{display:none}}
+.stripe{display:flex;height:8px;max-width:320px;margin:0 auto 10px;border-radius:6px;overflow:hidden}.stripe i{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0}.chip2{border-radius:12px;padding:4px 10px;font-size:.85rem;font-weight:700}
+/* ===== Tema lúdico (igual à Hora do Código): creme com pontinhos, contornos azul-escuros e sombras duras ===== */
+:root{--tx:#1e1b4b;--bd:#1e1b4b;--sh:#1e1b4b;--card:#fff;--card2:#fafbff;--card3:#fffdf5;--ink:#1e1b4b;--sun:#ffd23f;--coral:#ff6b6b;--mint:#2ee6a6;--sky:#4cc9f0;--grape:#7c3aed;--cream:#fff8e7;--acc:#4cc9f0}
+body.s0{--acc:#4cc9f0}body.s1{--acc:#2ee6a6}body.s2{--acc:#a5b4fc}body.s3{--acc:#d8b4fe}
+body.s4{--acc:#7dd3fc}body.s5{--acc:#ffb3c1}body.s6{--acc:#ff9a8b}body.s7{--acc:#ffd23f}body.sf{--acc:#2ee6a6}
+body,button,input{font-family:'Nunito','Nunito Sans',system-ui,-apple-system,sans-serif}
+h1,#title,.pt,#prog,.btn,#zone,.final b{font-family:'Fredoka','Nunito',sans-serif}
+body[class]{background:radial-gradient(rgba(255,150,60,.30) 1.4px,transparent 1.6px) 0 0/22px 22px,var(--cream);color:var(--tx);-webkit-tap-highlight-color:transparent}
+.star,.meteor{display:none}
+body{flex-direction:column;align-items:center;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+#wrap{width:100%;max-width:980px;margin:16px auto 0;padding:0 16px}
+#hdr{display:flex;align-items:center;justify-content:center;gap:16px;background:var(--card);border:3px solid var(--bd);border-radius:20px;box-shadow:0 5px 0 var(--sh);padding:12px 20px;margin-top:env(safe-area-inset-top)}
+#htxt{text-align:center}
+#htxt h1{margin:0;font-size:clamp(1.8rem,5.5vw,3rem);line-height:1.05;font-weight:700;color:var(--tx);letter-spacing:.2px;text-shadow:3px 3px 0 var(--sun)}
+#htxt p{margin:4px 0 0;font:700 1.05rem 'Fredoka','Nunito',sans-serif;color:#475569;letter-spacing:.3px}
+#game{max-width:none;width:100%;margin:16px 0 0;padding:16px 18px 14px;background:var(--card2);border:3px solid var(--bd);border-radius:24px;box-shadow:0 6px 0 var(--sh)}
+#bar{height:18px;background:var(--card);border:2.5px solid var(--bd);border-radius:99px}
+#fill{background:repeating-linear-gradient(135deg,var(--mint) 0 12px,#6ff2c4 12px 24px);background-size:34px 34px;animation:stripes 1s linear infinite;transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes stripes{to{background-position:34px 0}}
+#top{margin:12px 0}
+#prog{font-weight:700;font-size:1rem;color:var(--tx);background:var(--sun);border:2.5px solid var(--bd);border-radius:99px;padding:3px 14px;box-shadow:0 3px 0 var(--sh)}
+.box,#snd,#vz{background:var(--card);color:var(--tx);border:2.5px solid var(--bd);border-radius:99px;box-shadow:0 3px 0 var(--sh);font-weight:800;font-size:.9rem}
+#snd,#vz{cursor:pointer;transition:transform .08s,box-shadow .08s,background .12s}
+#snd:hover,#vz:hover{background:var(--sun)}
+#snd:active,#vz:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
+#snd:focus-visible,#vz:focus-visible,.btn:focus-visible,#pn:focus-visible{outline:3px solid var(--grape);outline-offset:2px}
+#hero{margin:10px 0}
+#zone{display:inline-block;background:var(--acc);color:var(--tx);border:2.5px solid var(--bd);border-radius:99px;padding:2px 14px;font-size:.9rem;font-weight:700;letter-spacing:.2px;text-transform:none;transition:background .4s}
+#title{font-size:clamp(1.5rem,4.2vw,2.1rem);font-weight:700;margin:8px 0 12px;color:var(--tx)}
+#fala{position:relative;background:var(--card);border:3px solid var(--bd);border-radius:18px;box-shadow:0 4px 0 var(--sh);padding:10px 16px;font-size:1.05rem;font-weight:700;color:var(--tx)}
+#fala::before{content:"";position:absolute;top:-13px;left:50%;margin-left:-10px;border:10px solid transparent;border-bottom:12px solid var(--bd);border-top:0}
+#mission{background:var(--card3);border:2.5px dashed rgba(30,27,75,.4);border-radius:22px;padding:14px;margin-top:18px}
+.panel{background:var(--card);border:3px solid var(--bd);border-radius:18px;box-shadow:0 4px 0 var(--sh);padding:12px}
+.pt{font-weight:700;font-size:1.05rem;color:var(--tx)}
+.tag{min-height:54px;font-weight:800;font-size:1.02rem;color:var(--tx);border:3px solid var(--bd);border-radius:16px;box-shadow:0 4px 0 var(--sh);transition:transform .1s,box-shadow .1s,background .12s}
+.tag:not(.disabled):not(.ghost):hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--sh);background:#fff3bf}
+.tag:not(.ghost):active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+.selected{background:var(--sun)!important;border-color:var(--bd)}
+.correct{background:var(--mint)!important;border-color:var(--bd);animation:popc .35s}
+.correct.disabled{opacity:1}
+.wrong{background:#ffb4b4!important;border-color:var(--bd)}
+.tgt{border-style:dashed}
+.tgt.over{transform:scale(1.05);background:var(--sun);border-color:var(--bd)}
+.chip{background:var(--mint);color:#1e1b4b;border:2px solid var(--bd);font-weight:800;font-size:.85rem}
+.ghost{border-color:var(--bd);box-shadow:0 10px 0 rgba(30,27,75,.35)}
+#fb{font-size:1.1rem;min-height:30px}
+#fb.ok{color:#15803d}#fb.err{color:#b91c1c}
+.btn{background:var(--sun);color:var(--tx);border:3px solid var(--bd);border-radius:16px;box-shadow:0 5px 0 var(--sh);padding:11px 24px;font-size:1.1rem;font-weight:700;transition:transform .08s,box-shadow .08s,background .12s}
+.btn:hover{background:#ffe066}
+.btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--ink)}
+#next{animation:nudge 1.4s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(-4px)}}
+#pn{color:var(--tx);border:3px solid var(--bd);border-radius:16px;font-weight:800;box-shadow:0 4px 0 var(--sh);font-size:1.15rem}
+.final .big{font-size:4.5rem;animation:float 2s ease-in-out infinite}
+.rev{background:#fff3bf;border:2px solid var(--bd)}
+.lvh,#credit{color:#475569;font-weight:700}
+#fname{background:var(--ink);padding:2px 10px;border-radius:99px;color:var(--sun)}
+.pop{position:fixed;z-index:10001;pointer-events:none;font:700 1.9rem 'Fredoka',sans-serif;color:var(--sun);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--sh);animation:pop .9s ease-out forwards}
+@keyframes pop{from{opacity:1;transform:translate(-50%,0) scale(.6)}30%{transform:translate(-50%,-20px) scale(1.2)}to{opacity:0;transform:translate(-50%,-70px) scale(1)}}
+@media(max-width:600px){#wrap{padding:0 8px;margin-top:8px}#hdr{gap:10px;padding:10px 12px}#htxt p{font-size:.85rem}#game{padding:12px}#fala{font-size:1rem}.tag{font-size:.95rem}}
+@media(prefers-reduced-motion:reduce){#fill,#next,.final .big{animation:none}.pop{animation-duration:.01s}}
+
+/* ===== Trilho de missões (substitui a barra) ===== */
+#trail{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:4px 2px 10px}
+.nd{position:relative;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--card);border:2.5px solid var(--bd);box-shadow:0 3px 0 var(--sh);font-size:1rem;opacity:.75;transition:background .3s,transform .3s}
+.nd:not(:last-child)::after{content:"";position:absolute;left:100%;top:50%;width:10px;border-top:3px dashed var(--bd);transform:translateY(-50%)}
+.nd.dn{background:var(--mint);opacity:1;color:#1e1b4b;font-weight:900}
+.nd.now{background:var(--sun);opacity:1;transform:scale(1.25);animation:nudge 1.4s ease-in-out infinite;z-index:1}
+/* ===== Menu "Mais", pausa ===== */
+#mw{display:inline-block;position:relative;margin-left:6px}
+#mb,#pz,#hm{border:2.5px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:6px 12px;font-weight:800;font-size:.9rem;cursor:pointer;box-shadow:0 3px 0 var(--sh);margin-left:6px;transition:transform .08s,box-shadow .08s,background .12s}
+#mw #mb{margin-left:0}
+#mb:hover,#pz:hover,#hm:hover{background:var(--sun);color:#1e1b4b}
+#mb:active,#pz:active,#hm:active{transform:translateY(3px);box-shadow:0 0 0 var(--sh)}
+#mb:focus-visible,#pz:focus-visible,#hm:focus-visible,#dk:focus-visible,#fs:focus-visible{outline:3px solid var(--grape);outline-offset:2px}
+#mm{position:absolute;right:0;top:calc(100% + 8px);z-index:60;display:flex;flex-direction:column;gap:8px;background:var(--card);border:3px solid var(--bd);border-radius:18px;box-shadow:0 5px 0 var(--sh);padding:10px;min-width:190px}
+#mm[hidden]{display:none}
+#mm button{margin:0;width:100%;text-align:left;border:2.5px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:7px 12px;font-weight:800;font-size:.9rem;cursor:pointer;box-shadow:0 3px 0 var(--sh)}
+#mm button:hover{background:var(--sun);color:#1e1b4b}
+#pauseov,#homeov{position:fixed;inset:0;z-index:30000;background:rgba(30,27,75,.82);display:grid;place-items:center;padding:16px}
+.pbox{background:var(--card);color:var(--tx);border:4px solid var(--bd);border-radius:28px;box-shadow:0 8px 0 var(--sh);padding:28px 32px;text-align:center;max-width:420px}
+.pbox h2{font-family:'Fredoka','Nunito',sans-serif;font-size:2rem;margin:.2em 0}
+.pbig{font-size:4rem}
+/* ===== Estrelas por missão ===== */
+.stl{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;margin:10px auto;max-width:700px;text-align:left}
+.sti{display:flex;justify-content:space-between;gap:8px;background:var(--card);border:2.5px solid var(--bd);border-radius:12px;padding:5px 10px;font-weight:800;font-size:.9rem}
+/* ===== Telemóvel: o robô não tapa o jogo ===== */
+@media(max-width:700px){#fbub{display:none}#fvb{width:56px}#fname{font-size:.7rem}body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}.nd{width:26px;height:26px;font-size:.75rem;gap:4px}.nd:not(:last-child)::after{display:none}#trail{gap:6px}#mm{right:auto;left:0}}
+/* ===== Modo escuro ===== */
+html.dark{--tx:#e2e8f0;--bd:#475569;--sh:#020617;--card:#1e293b;--card2:#111c33;--card3:#0f172a}
+html.dark body[class]{background:radial-gradient(rgba(125,140,255,.16) 1.4px,transparent 1.6px) 0 0/22px 22px,#0b1220}
+html.dark #htxt p,html.dark .lvh,html.dark #credit{color:#94a3b8}
+html.dark #htxt h1{text-shadow:3px 3px 0 #7c3aed}
+html.dark #prog,html.dark #zone,html.dark .selected,html.dark .correct,html.dark .wrong,html.dark .btn,html.dark .rev,html.dark .tgt.over{color:#1e1b4b}
+html.dark .tag{background:var(--card);color:var(--tx)}
+html.dark .tag:not(.disabled):not(.ghost):hover{background:#334155}
+html.dark .tag.selected,html.dark .tag.correct,html.dark .tag.wrong,html.dark .tgt.over{color:#1e1b4b}
+html.dark .chip{color:#1e1b4b}
+html.dark #pn{background:var(--card);color:var(--tx)}
+html.dark #fb.ok{color:#4ade80}html.dark #fb.err{color:#fca5a5}
+html.dark #fala::before{border-bottom-color:var(--bd)}
+html.dark .tag.correct:hover{background:var(--mint)}
+
+/* ===== Específico do Bom colega ===== */
+.stripe{height:12px;max-width:340px;border:2.5px solid var(--bd);margin:0 auto 12px;border-radius:99px}
+.chip2{border:2.5px solid var(--bd);box-shadow:0 2px 0 var(--sh);color:#1b1b1b}
+#zone{color:var(--acct,#1e1b4b)}
+html.dark #zone{color:var(--acct,#1e1b4b)}
+html.dark .chip2{box-shadow:0 2px 0 #020617}
+</style>
+</head>
+<body class="s0">
+<div id="wrap">
+<header id="hdr"><div id="htxt"><h1>Como ser um bom colega</h1><p>VanBerto's · Regras da turma</p></div></header>
+<div id="game">
+  <div class="stripe" id="stripe" aria-hidden="true"></div>
+  <div id="trail" aria-hidden="true"></div>
+  <div id="top">
+    <div id="prog"></div>
+    <div><span class="box">⭐ <b id="p">0</b></span><span class="box" id="st" style="display:none">🔥 <b id="sk">0</b></span><span class="box" id="tm" style="display:none"></span><span class="box">✔ <b id="c">0</b></span><span class="box">✘ <b id="w">0</b></span><button id="hm" type="button" title="Voltar ao início e mudar de nível">🏠 Início</button><button id="pz" type="button" title="Pausar o jogo (P)">⏸️ Pausa</button><span id="mw"><button id="mb" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mm">⚙️ Mais</button><div id="mm" hidden><button id="snd" type="button">🔊 Som</button><button id="vz" type="button">🤐 Voz desligada</button><button id="dk" type="button">🌙 Modo escuro</button><button id="fs" type="button">⛶ Ecrã inteiro</button></div></span></div>
+  </div>
+
+  <div id="hero">
+    <div id="talk"><div id="zone"></div><div id="title"></div><div id="fala"></div></div>
+  </div>
+
+  <div id="mission"></div>
+  <div id="fb"></div>
+  <div id="ctrl"><button id="next" class="btn" style="display:none"></button><button id="dip" class="btn" style="display:none">🎓 Diploma</button><button id="train" class="btn" style="display:none">🎯 Treinar o que errei</button><button id="again" class="btn" style="display:none">↺ Jogar de novo</button></div>
+  <div id="fw"><div id="fbub" role="status" aria-live="polite"></div><canvas id="fvb" role="button" tabindex="0" aria-label="VanBerto's – clica para uma dica"></canvas><div id="fname">👤 Bom colega</div></div>
+  <div id="credit">© Prof.ª Vanda Várzea</div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const shuf=a=>[...a].sort(()=>Math.random()-.5);
+
+/* ===== Som e voz ===== */
+let ac=null,sound=true,voice=false;
+$('snd').onclick=()=>{sound=!sound;$('snd').textContent=sound?'🔊 Som':'🔇 Som'};
+$('vz').onclick=()=>{voice=!voice;$('vz').textContent=voice?'🗣️ Voz ligada':'🤐 Voz desligada';if(!voice&&window.speechSynthesis)speechSynthesis.cancel()};
+function beep(notes){if(!sound)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+  notes.forEach(([f,d,o])=>{const os=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+o;
+    os.type='square';os.frequency.value=f;os.connect(g);g.connect(ac.destination);
+    g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);os.start(t);os.stop(t+d)})}catch(e){}}
+const SND={ok:[[660,.12,0],[880,.12,.12]],err:[[220,.18,0],[160,.2,.12]],next:[[440,.1,0],[660,.1,.11]],fim:[[523,.12,0],[659,.12,.14],[784,.14,.28],[1046,.18,.45]]};
+function say(t){if(!voice||!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='pt-PT';speechSynthesis.speak(u)}
+
+/* ===== Robô ===== */
+function rrVan(ctx,x,y,w,h,r){
+  const rr=Math.min(r,w/2,h/2);
+  ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();
+}
+function cfVan(ctx,x,y,r,color){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}
+
+function drawVBAtual(ctx,blink,step,armsUp){
+  const w=96,h=96;
+  ctx.clearRect(0,0,w,h);
+  ctx.lineJoin="round"; ctx.lineCap="round";
+  ctx.save(); ctx.translate(0,6);
+  const NAVY="#16233e", NAVY2="#26365a", OUT="#101a30";
+  function white(x0,y0,x1,y1){const g=ctx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,"#ffffff");g.addColorStop(0.55,"#e6edf7");g.addColorStop(1,"#b4c4dc");return g;}
+
+  const LIFT=8, STRIDE=3;
+  let lTop=70, rTop=70, lDX=0, rDX=0;
+  if(step===0){ lTop=70-LIFT; lDX=STRIDE; rDX=-STRIDE; }
+  else if(step===1){ rTop=70-LIFT; rDX=STRIDE; lDX=-STRIDE; }
+  function leg(cx,top){
+    rrVan(ctx,cx-5,top,10,11,4.5); ctx.fillStyle=white(cx-5,top,cx+5,top); ctx.fill();
+    ctx.lineWidth=2.6; ctx.strokeStyle=OUT; ctx.stroke();
+    const fy=top+9;
+    rrVan(ctx,cx-6.5,fy,13,9,4); ctx.fillStyle=NAVY; ctx.fill();
+    ctx.lineWidth=2.6; ctx.strokeStyle=OUT; ctx.stroke();
+    rrVan(ctx,cx-6.5,fy+2,13,2.4,1.2); ctx.fillStyle="rgba(255,255,255,0.85)"; ctx.fill();
+    cfVan(ctx,cx-2.5,fy+4.5,1.4,"rgba(255,255,255,0.5)");
+  }
+  leg(41+lDX,lTop); leg(55+rDX,rTop);
+
+  const ARM_SWING = 0.24;
+  const JUMP_RAISE = 2.9;
+  let lArmSwing = 0, rArmSwing = 0;
+  if(armsUp){ lArmSwing = JUMP_RAISE; rArmSwing = -JUMP_RAISE; }
+  else if(step===0){ lArmSwing=-ARM_SWING; rArmSwing=ARM_SWING; }
+  else if(step===1){ lArmSwing=ARM_SWING; rArmSwing=-ARM_SWING; }
+  function arm(sx,swing){
+    ctx.save();
+    const px=sx+4.5, py=52;
+    ctx.translate(px,py); ctx.rotate(swing); ctx.translate(-px,-py);
+    rrVan(ctx,sx,52,9,13,4.5); ctx.fillStyle=white(sx,52,sx+9,52); ctx.fill();
+    ctx.lineWidth=2.6; ctx.strokeStyle=OUT; ctx.stroke();
+    const hx=sx+4.5, hy=67;
+    cfVan(ctx,hx,hy,5,NAVY);
+    ctx.lineWidth=2.3; ctx.strokeStyle=OUT; ctx.beginPath(); ctx.arc(hx,hy,5,0,Math.PI*2); ctx.stroke();
+    cfVan(ctx,hx-2,hy+1.6,1.4,NAVY2); cfVan(ctx,hx+0.5,hy+2.4,1.4,NAVY2); cfVan(ctx,hx+2.5,hy+1.6,1.4,NAVY2);
+    ctx.restore();
+  }
+  arm(17,lArmSwing); arm(70,rArmSwing);
+
+  rrVan(ctx,26,44,44,32,15); ctx.fillStyle=white(28,46,68,46); ctx.fill();
+  ctx.save(); rrVan(ctx,26,44,44,32,15); ctx.clip();
+  const wg=ctx.createLinearGradient(0,64,0,76); wg.addColorStop(0,"rgba(22,35,62,0)"); wg.addColorStop(0.4,"#1c2c4c"); wg.addColorStop(1,"#142038");
+  ctx.fillStyle=wg; ctx.fillRect(26,62,44,16);
+  ctx.strokeStyle="rgba(16,26,48,0.6)"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(28,64); ctx.lineTo(68,64); ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,0.5)"; ctx.beginPath(); ctx.ellipse(36,52,9,5.5,-0.5,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.lineWidth=3; ctx.strokeStyle=OUT; rrVan(ctx,26,44,44,32,15); ctx.stroke();
+
+  cfVan(ctx,48,56,8,NAVY);
+  ctx.lineWidth=2.5; ctx.strokeStyle=OUT; ctx.beginPath(); ctx.arc(48,56,8,0,Math.PI*2); ctx.stroke();
+  const dome=ctx.createRadialGradient(45.5,53.5,1,48,56,7); dome.addColorStop(0,"#aebccf"); dome.addColorStop(0.6,"#5a6a85"); dome.addColorStop(1,"#2b3a57");
+  ctx.fillStyle=dome; ctx.beginPath(); ctx.arc(48,56,5.7,0,Math.PI*2); ctx.fill();
+  cfVan(ctx,46,53.8,1.5,"rgba(255,255,255,0.85)");
+
+  function pod(cx){
+    cfVan(ctx,cx,32,6,NAVY);
+    ctx.lineWidth=2.3; ctx.strokeStyle=OUT; ctx.beginPath(); ctx.arc(cx,32,6,0,Math.PI*2); ctx.stroke();
+    cfVan(ctx,cx,32,2.8,NAVY2); cfVan(ctx,cx-0.8,31,1,"rgba(255,255,255,0.6)");
+  }
+  pod(25); pod(71);
+
+  ctx.fillStyle=NAVY; ctx.beginPath(); ctx.moveTo(45,16); ctx.lineTo(51,16); ctx.lineTo(49.2,8); ctx.lineTo(46.8,8); ctx.closePath(); ctx.fill();
+  const halo=ctx.createRadialGradient(48,5,1,48,5,11); halo.addColorStop(0,"rgba(90,200,255,0.55)"); halo.addColorStop(1,"rgba(90,200,255,0)");
+  ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(48,5,11,0,Math.PI*2); ctx.fill();
+  const bg=ctx.createRadialGradient(46.3,3.5,0.5,48,5,5.5); bg.addColorStop(0,"#e6f7ff"); bg.addColorStop(0.4,"#48b4ff"); bg.addColorStop(1,"#1670d8");
+  ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(48,5,5.5,0,Math.PI*2); ctx.fill();
+  cfVan(ctx,46.2,3.4,1.6,"#ffffff");
+
+  rrVan(ctx,26,14,44,34,17); ctx.fillStyle=white(28,15,68,15); ctx.fill();
+  ctx.lineWidth=3; ctx.strokeStyle=OUT; ctx.stroke();
+  ctx.save(); rrVan(ctx,26,14,44,34,17); ctx.clip();
+  ctx.fillStyle="rgba(255,255,255,0.6)"; ctx.beginPath(); ctx.ellipse(38,19,10,4,-0.5,0,Math.PI*2); ctx.fill(); ctx.restore();
+
+  rrVan(ctx,30,20,36,23,12); ctx.fillStyle=NAVY; ctx.fill();
+  rrVan(ctx,32.5,22,31,19,10);
+  const vg=ctx.createLinearGradient(0,22,0,41); vg.addColorStop(0,"#7fd4ff"); vg.addColorStop(0.5,"#2a9bf0"); vg.addColorStop(1,"#1366c6");
+  ctx.fillStyle=vg; ctx.fill();
+  ctx.save(); rrVan(ctx,32.5,22,31,19,10); ctx.clip();
+  ctx.fillStyle="rgba(255,255,255,0.45)"; ctx.beginPath(); ctx.ellipse(42,25,9,3.5,-0.4,0,Math.PI*2); ctx.fill(); ctx.restore();
+
+  if(!blink){
+    ctx.fillStyle="#0a0f1c";
+    ctx.beginPath(); ctx.ellipse(41,30,3.3,4,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(55,30,3.3,4,0,0,Math.PI*2); ctx.fill();
+    cfVan(ctx,42.3,28.4,1.5,"#fff"); cfVan(ctx,39.9,31,0.8,"#fff");
+    cfVan(ctx,56.3,28.4,1.5,"#fff"); cfVan(ctx,53.9,31,0.8,"#fff");
+  } else if(blink==="wink"){
+    ctx.fillStyle="#0a0f1c";
+    ctx.beginPath(); ctx.ellipse(41,30,3.3,4,0,0,Math.PI*2); ctx.fill();
+    cfVan(ctx,42.3,28.4,1.5,"#fff"); cfVan(ctx,39.9,31,0.8,"#fff");
+    ctx.lineWidth=3; ctx.strokeStyle="#0a0f1c"; ctx.lineCap="round";
+    ctx.beginPath(); ctx.arc(55,31,3.5,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  } else if(blink==="happy"){
+    ctx.lineWidth=3.2; ctx.strokeStyle="#0a0f1c"; ctx.lineCap="round";
+    ctx.beginPath(); ctx.arc(41,31,3.9,0.10*Math.PI,0.90*Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(55,31,3.9,0.10*Math.PI,0.90*Math.PI); ctx.stroke();
+    cfVan(ctx,33.5,35.5,3,"rgba(255,120,120,0.55)");
+    cfVan(ctx,62.5,35.5,3,"rgba(255,120,120,0.55)");
+  } else if(blink==="sad"){
+    ctx.strokeStyle="#0a0f1c"; ctx.lineWidth=2.3; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(37,24); ctx.lineTo(44.5,27); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(59,24); ctx.lineTo(51.5,27); ctx.stroke();
+    ctx.fillStyle="#0a0f1c";
+    ctx.beginPath(); ctx.ellipse(41,32,2.8,3.1,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(55,32,2.8,3.1,0,0,Math.PI*2); ctx.fill();
+    cfVan(ctx,42,30.7,1.1,"#fff"); cfVan(ctx,56,30.7,1.1,"#fff");
+    ctx.fillStyle="#6fd0ff";
+    ctx.beginPath();
+    ctx.moveTo(56,35); ctx.quadraticCurveTo(59,40,56,43.5); ctx.quadraticCurveTo(53,40,56,35);
+    ctx.closePath(); ctx.fill();
+  } else {
+    ctx.lineWidth=3; ctx.strokeStyle="#0a0f1c";
+    ctx.beginPath(); ctx.arc(41,31,3.5,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(55,31,3.5,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  }
+  ctx.fillStyle="#0a0f1c";
+  if(blink==="wink"){
+    ctx.beginPath(); ctx.ellipse(48,36,5.6,3.6,0,0,Math.PI); ctx.fill();
+    ctx.fillStyle="#ff7a7a";
+    ctx.beginPath(); ctx.ellipse(48,37.6,2.9,1.7,0,0,Math.PI); ctx.fill();
+  } else if(blink==="happy"){
+    ctx.beginPath(); ctx.ellipse(48,36,6.2,4.2,0,0,Math.PI); ctx.fill();
+    ctx.fillStyle="#ff7a7a";
+    ctx.beginPath(); ctx.ellipse(48,38,3.2,1.9,0,0,Math.PI); ctx.fill();
+  } else if(blink==="sad"){
+    ctx.strokeStyle="#0a0f1c"; ctx.lineWidth=2.4; ctx.lineCap="round";
+    ctx.beginPath(); ctx.arc(48,40,4.2,Math.PI,Math.PI*2); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.ellipse(48,36,4.6,3.2,0,0,Math.PI); ctx.fill();
+    ctx.fillStyle="#ff7a7a";
+    ctx.beginPath(); ctx.ellipse(48,37.4,2.4,1.5,0,0,Math.PI); ctx.fill();
+  }
+  ctx.restore();
+}
+
+
+
+const CV=['fvb'].map(i=>{const c=$(i),x=c.getContext('2d'),D=Math.min(devicePixelRatio||1,3);c.width=c.height=96*D;x.scale(D,D);return x});
+const draw=(b,s,a)=>CV.forEach(x=>drawVBAtual(x,b,s,a));
+let tok=0,quiet=0,bt=null;
+function play(fr){const t=++tok;let i=0;(function n(){if(t!==tok)return;if(i>=fr.length){draw(false,-1,false);return}const f=fr[i++];draw(f[0],f[1],f[2]);setTimeout(n,f[3])})()}
+function bub(t){const b=$('fbub');b.textContent=t;b.classList.add('show');clearTimeout(bt);bt=setTimeout(()=>b.classList.remove('show'),3500)}
+function robot(m){quiet=Date.now()+2500;
+  [$('fvb')].forEach(e=>{e.classList.remove('glow','shake','dance');void e.offsetWidth;e.classList.add(m);setTimeout(()=>e.classList.remove(m),900)});
+  play(m==='glow'?[['happy',-1,true,800]]:m==='shake'?[['sad',-1,false,1300]]:[['wink',0,false,180],['happy',1,true,180],['happy',0,true,180],['happy',1,true,180],['wink',-1,true,500]])}
+draw(false,-1,false);
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+setInterval(()=>{if(document.hidden||REDUCED||Date.now()<quiet)return;const r=Math.random();
+  r<.3?play([['happy',-1,true,500]]):r<.6?play([[false,0,false,170],[false,1,false,170],[false,0,false,170],[false,1,false,170]]):play([[true,-1,false,180]])},3600);
+const hint=()=>{const m=curM,t=m?(m.h||m.d||m.f):'Olá!';robot('glow');bub(t);if(getComputedStyle($('fbub')).display==='none')fb('💡 '+t)};
+let drag=null,mv=0;const FW=$('fw');
+FW.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,l:FW.offsetLeft,t:FW.offsetTop};mv=0;FW.setPointerCapture(e.pointerId)});
+FW.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;mv=Math.max(mv,Math.abs(dx)+Math.abs(dy));
+  if(mv>6){FW.style.right=FW.style.bottom='auto';FW.style.left=Math.min(innerWidth-FW.offsetWidth,Math.max(0,drag.l+dx))+'px';FW.style.top=Math.min(innerHeight-FW.offsetHeight,Math.max(0,drag.t+dy))+'px'}});
+FW.addEventListener('pointerup',()=>{drag=null;if(mv<=6)hint()});
+$('fvb').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();hint()}};
+
+/* ===== Pontuação e feedback ===== */
+let ok=0,bad=0,cur=0,pts=0,streak=0,name='',lvl='n',tmr=null,curM=null,MD=[];const errs=[];
+let SEQ=[],train=false,paused=false;const starsOf={};
+const ico=k=>M[k].e||(M[k].r!=null?RULES[M[k].r].e:'⭐');
+function trail(fim){const t=$('trail');t.textContent='';SEQ.forEach((mi,k)=>{const d=fim||k<cur;t.append(el('span','nd'+(d?' dn':k===cur?' now':''),d?'✔':ico(mi)))})}
+function pop(t){const r=$('fb').getBoundingClientRect(),e=el('div','pop',t);e.style.left=(r.left+r.width/2)+'px';e.style.top=r.top+'px';document.body.append(e);setTimeout(()=>e.remove(),900)}
+const PR=['Muito bem!','Boa!','Excelente!','Isso mesmo!','Estás a arrasar!'];
+const upd=()=>{$('c').textContent=ok;$('w').textContent=bad;$('p').textContent=pts;$('sk').textContent=streak;$('st').style.display=streak>=3?'inline-block':'none'};
+const fb=(t,c)=>{$('fb').textContent=t||'';$('fb').className=c||''};
+function track(g){const m=curM;if(!m||m.r==null)return;const q=RES[m.r]=RES[m.r]||{ok:0,t:0};if(!m.tried){m.tried=1;q.t++;if(g)q.ok++}}
+function right(x){track(1);streak++;const g=(10+(streak>=3?5:0))*(lvl==='d'?2:1);pts+=g;ok++;upd();const p=PR[Math.floor(Math.random()*PR.length)];
+  fb(`${p} ⭐ +${g}`+(streak>=3?` 🔥 Sequência de ${streak}!`:'')+(x?' '+x:''),'ok');beep(SND.ok);say(p);bub(p+(name?' '+name:''));robot(streak>=3?'dance':'glow');pop('+'+g)}
+function wrong(d){track(0);errs[SEQ[cur]]=(errs[SEQ[cur]]||0)+1;streak=0;bad++;upd();const dd=lvl==='f'&&d?d:'Pensa lá outra vez…';fb(dd,'err');beep(SND.err);say('Pensa lá outra vez.');bub(dd);robot('shake')}
+function timer(){clearInterval(tmr);const t=$('tm');if(lvl!=='d'){t.style.display='none';return}let n=60;t.style.display='inline-block';t.textContent='⏱ '+n;
+  tmr=setInterval(()=>{if(paused)return;n--;t.textContent='⏱ '+n;if(n<=0){clearInterval(tmr);wrong('Tempo esgotado!');fb('Tempo esgotado! ⏱','err');setTimeout(()=>cur+1<SEQ.length?start(cur+1):final(),900)}},1000)}
+const flash=(b,c)=>{b.classList.add(c);setTimeout(()=>b.classList.remove(c),600)};
+
+/* ===== Missões (dados) ===== */
+const RULES = [
+    { e: "👋", n: "Cumprimentar os colegas e professores", d: "começar o dia com amizade e respeito.", c: "#ff6b2c" },
+    { e: "😊", n: "Ser simpático com todos",               d: "evitar conflitos e ajudar quem precisa.", c: "#e395c0" },
+    { e: "🎒", n: "Vir preparado para aprender",           d: "trazer cadernos, lápis e muita vontade.", c: "#8c96ff" },
+    { e: "✋", n: "Levantar a mão para partilhar ideias",  d: "todos merecem ser ouvidos.", c: "#c3fb6d" },
+    { e: "🧹", n: "Manter a sala e o recreio limpos",      d: "não deixar lixo no chão.", c: "#0399b5" },
+    { e: "💻", n: "Usar computadores e tablets de forma responsável", d: "seguir as instruções da professora.", c: "#ffdd2d" },
+    { e: "🤝", n: "Ajudar os colegas",                     d: "partilhar ideias e colaborar nos trabalhos de grupo, porque juntos aprendemos mais.", c: "#7ed957" },
+    { e: "⏰", n: "Chegar a horas",                        d: "cumprir horários e tarefas.", c: "#0bc1e0" },
+    { e: "📣", n: "Ser honesto e pedir ajuda quando preciso", d: "a verdade torna-nos mais fortes.", c: "#1a0da8", dark: true }
+];
+
+/* r = índice da regra; right = resposta certa; wrong = duas erradas */
+const questionsData = [
+    { r: 0, text: "Chegas à escola e encontras a funcionária à porta. O que fazes?",
+      right: "Dizes “Bom dia!” com um sorriso.",
+      wrong: ["Passas sem dizer nada, porque tens pressa.", "Só cumprimentas os teus amigos."],
+      why: "Cumprimentar todos, e não só os amigos, mostra respeito." },
+    { r: 0, text: "Um colega que não conheces bem entra na sala. O que fazes?",
+      right: "Dizes “Olá!” e sorris.",
+      wrong: ["Esperas que ele diga primeiro.", "Finges que não o vês."],
+      why: "Começar com um “Olá” faz qualquer pessoa sentir-se bem-vinda." },
+    { r: 0, text: "A aula acabou e vais sair da sala. O que faz um bom colega?",
+      right: "Despede-se da professora e dos colegas.",
+      wrong: ["Sai a correr sem dizer nada.", "Só se despede se a professora olhar para ele."],
+      why: "Despedir-se também é uma forma de cumprimentar com educação." },
+    { r: 1, text: "Dois colegas discutem por causa de uma jogada no recreio. O que faz um bom colega?",
+      right: "Ajuda a acalmar e propõe repetir a jogada.",
+      wrong: ["Fica do lado do amigo mais próximo e grita com o outro.", "Chama mais colegas para verem a confusão."],
+      why: "Um colega simpático ajuda a resolver o conflito, em vez de o aumentar." },
+    { r: 1, text: "Um colega está sozinho no recreio. O que fazes?",
+      right: "Convidas para brincar contigo.",
+      wrong: ["Achas que ele gosta de estar sozinho e deixas-o.", "Dizes aos outros que ele é esquisito."],
+      why: "Convidar quem está sozinho é uma forma simples de ajudar." },
+    { r: 1, text: "Um colega disse uma coisa que te irritou. Como reages?",
+      right: "Respiras fundo e dizes com calma o que sentiste.",
+      wrong: ["Respondes com um insulto.", "Ficas sem lhe falar durante uma semana."],
+      why: "Falar com calma evita conflitos e resolve o problema mais depressa." },
+    { r: 2, text: "Amanhã há aula de Português. O que fazes antes de ires para a escola?",
+      right: "Verificas a mochila e preparas o material.",
+      wrong: ["Deixas para ver de manhã, à pressa.", "Contas pedir tudo emprestado aos colegas."],
+      why: "Preparar a mochila na véspera evita esquecimentos e atrasos." },
+    { r: 2, text: "Esqueceste-te do lápis em casa. O que fazes?",
+      right: "Pedes emprestado com educação e lembras-te de o trazer amanhã.",
+      wrong: ["Ficas sem fazer nada, porque não tens lápis.", "Tiras um lápis da mochila de um colega sem pedir."],
+      why: "Podemos esquecer-nos de algo, mas pedir bem e corrigir no dia seguinte é a atitude certa." },
+    { r: 2, text: "A professora vai começar uma matéria nova. Como te preparas?",
+      right: "Arrumas o que não precisas e ficas atento.",
+      wrong: ["Continuas a conversar com o colega do lado.", "Pensas que vai ser aborrecido e desligas."],
+      why: "Vir com vontade de aprender começa por estar atento desde o primeiro minuto." },
+    { r: 3, text: "A professora está a explicar e tu queres falar. O que deves fazer?",
+      right: "Levantar a mão e esperar a tua vez.",
+      wrong: ["Começar a falar por cima.", "Fazer barulho para chamar a atenção."],
+      why: "Esperar a vez deixa todos ouvirem a explicação." },
+    { r: 3, text: "Sabes a resposta, mas a professora perguntou a outro colega. O que fazes?",
+      right: "Esperas e, se for preciso, levantas a mão no fim.",
+      wrong: ["Dizes a resposta em voz alta por cima dele.", "Sopras a resposta ao colega."],
+      why: "Deixar o colega pensar dá-lhe a oportunidade de aprender." },
+    { r: 3, text: "Vários colegas querem falar ao mesmo tempo. Como se resolve?",
+      right: "Cada um levanta a mão e fala à sua vez.",
+      wrong: ["Fala quem gritar mais alto.", "Fala quem estiver mais perto da professora."],
+      why: "Com a mão levantada, todos merecem ser ouvidos." },
+    { r: 4, text: "Chegas à sala e vês lixo no chão. O que fazes?",
+      right: "Apanhas e colocas no caixote do lixo.",
+      wrong: ["Empurras com o pé para debaixo da mesa.", "Finges que não é contigo."],
+      why: "Cuidar da sala é tarefa de todos, mesmo do lixo que não foi nosso." },
+    { r: 4, text: "Acabaste o lanche no recreio e tens a embalagem na mão. O que fazes?",
+      right: "Deitas no caixote do lixo.",
+      wrong: ["Deixas debaixo do banco.", "Atiras para o chão, alguém há de apanhar."],
+      why: "O recreio fica limpo quando cada um deita o seu lixo no sítio certo." },
+    { r: 4, text: "Acabaste de pintar e a mesa ficou suja de tinta. O que fazes?",
+      right: "Limpas a mesa antes de saíres.",
+      wrong: ["Deixas, porque há de vir alguém da limpeza.", "Dizes que a mesa já estava suja."],
+      why: "Quem suja deve limpar: assim a sala fica boa para a próxima turma." },
+    { r: 5, text: "A professora pede para arrumar o computador ou o tablet. O que fazes?",
+      right: "Arrumas com cuidado, como te ensinaram.",
+      wrong: ["Fechas à pressa e deixas tudo desarrumado.", "Dizes que não foste tu que usaste."],
+      why: "Os equipamentos são de todos e precisam de cuidado." },
+    { r: 5, text: "A professora diz para usares o tablet só para a atividade. O que fazes?",
+      right: "Usas só para a atividade, como foi pedido.",
+      wrong: ["Abres jogos às escondidas.", "Mexes nos tablets dos colegas sem pedir."],
+      why: "Seguir as instruções da professora é usar a tecnologia de forma responsável." },
+    { r: 5, text: "Numa pesquisa, aparece um site a pedir o teu nome e a tua morada para ganhares um prémio. O que fazes?",
+      right: "Não escreves nada e chamas a professora.",
+      wrong: ["Preenches, para ver se ganhas o prémio.", "Clicas em tudo para fechar a janela."],
+      why: "Dados pessoais não se partilham na internet sem falar com um adulto." },
+    { r: 6, text: "Estás num trabalho de grupo. Como age um bom colega?",
+      right: "Partilha ideias e ouve os outros.",
+      wrong: ["Quer mandar em tudo sozinho.", "Não deixa ninguém falar."],
+      why: "Num grupo, as ideias de todos juntas dão um trabalho melhor." },
+    { r: 6, text: "Um colega comete um erro numa atividade. Como és um bom colega?",
+      right: "Ajudas e dizes que está tudo bem, todos erramos.",
+      wrong: ["Gozas com ele à frente da turma.", "Gritas que ele errou."],
+      why: "Errar faz parte de aprender, e ajudar faz o colega ganhar confiança." },
+    { r: 6, text: "Um colega do grupo não está a fazer a sua parte. O que fazes?",
+      right: "Perguntas se precisa de ajuda e combinam as tarefas.",
+      wrong: ["Fazes tudo sozinho e ficas zangado.", "Dizes à turma que ele não faz nada."],
+      why: "Perguntar com calma ajuda o grupo a trabalhar junto." },
+    { r: 7, text: "A aula começa às 9h. O que faz um bom colega?",
+      right: "Chega a horas e já com tudo pronto.",
+      wrong: ["Chega sempre depois do toque.", "Fica a brincar no recreio depois do toque."],
+      why: "Chegar a horas respeita a professora e os colegas." },
+    { r: 7, text: "Tens de entregar um trabalho até sexta-feira. O que fazes?",
+      right: "Fazes com tempo e entregas no prazo.",
+      wrong: ["Deixas para a última hora e não entregas.", "Inventas uma desculpa em vez de fazer o trabalho."],
+      why: "Cumprir prazos mostra responsabilidade." },
+    { r: 7, text: "O recreio acabou e o toque já soou. O que fazes?",
+      right: "Vais logo para a fila ou para a sala.",
+      wrong: ["Acabas o jogo primeiro, é só mais um minuto.", "Esperas que alguém te venha buscar."],
+      why: "Cumprir os horários evita atrasos e ajuda toda a turma." },
+    { r: 8, text: "Partiste sem querer o lápis de um colega. O que fazes?",
+      right: "Contas a verdade e pedes desculpa.",
+      wrong: ["Escondes o lápis e finges que não sabes.", "Dizes que foi outro colega."],
+      why: "Dizer a verdade é difícil, mas faz-nos mais fortes e merecedores de confiança." },
+    { r: 8, text: "Não percebeste a matéria. O que faz um bom colega?",
+      right: "Pede ajuda à professora.",
+      wrong: ["Finge que percebeu.", "Copia do colega sem perceber."],
+      why: "Pedir ajuda não é fraqueza: é o primeiro passo para aprender." },
+    { r: 8, text: "Encontras no chão da sala uma coisa que não é tua. O que fazes?",
+      right: "Entregas à professora para descobrir o dono.",
+      wrong: ["Ficas com ela, ninguém viu.", "Perguntas só aos teus amigos e, se ninguém quiser, guardas."],
+      why: "Ser honesto é devolver o que não é nosso, mesmo que ninguém esteja a ver." }
+];
+
+
+let M=[],RES={};
+const GOOD=[
+ "Cumprimentar a professora e os colegas com um sorriso.",
+ "Convidar um colega que está sozinho para brincar.",
+ "Verificar a mochila antes de ir para a escola.",
+ "Levantar a mão e esperar pela minha vez de falar.",
+ "Deitar a embalagem do lanche no caixote do lixo.",
+ "Usar o tablet só para a atividade que a professora pediu.",
+ "Ajudar um colega que ainda não percebeu a tarefa.",
+ "Chegar a horas e entregar os trabalhos no prazo.",
+ "Contar a verdade e pedir desculpa quando faço um erro.",
+ "Pedir ajuda à professora quando não percebo a matéria.",
+ "Ouvir as ideias de todos num trabalho de grupo.",
+ "Entregar à professora o que encontro no chão da sala."];
+const BAD=[
+ "Fingir que não vejo o colega que chegou.",
+ "Rir-me de um colega que errou.",
+ "Esquecer o material e pedir tudo aos outros.",
+ "Falar por cima da professora.",
+ "Atirar o lixo para o chão do recreio.",
+ "Abrir jogos escondido no tablet.",
+ "Fazer troça de um colega à frente da turma.",
+ "Chegar sempre atrasado depois do toque.",
+ "Esconder o que parti e dizer que foi outro.",
+ "Fingir que percebi para não pedir ajuda.",
+ "Mandar em tudo no trabalho de grupo.",
+ "Ficar com o que não é meu, porque ninguém viu."];
+function build(){
+  const byRule=RULES.map((_,r)=>questionsData.filter(q=>q.r===r));
+  let ch=byRule.map(l=>l[Math.floor(Math.random()*l.length)]);
+  ch=shuf(ch.concat(shuf(questionsData.filter(q=>!ch.includes(q))).slice(0,2)));
+  const Q=ch.map(q=>{const R=RULES[q.r];return{z:'Na escola',t:'O que fazes?',f:q.text,k:'single',c:R.c,r:q.r,e:R.e,
+    h:'Pensa no que um bom colega faria: respeita, ajuda e diz a verdade.',o:[[q.right,1],...q.wrong.map(w=>[w])],d:q.why+' (Do cartaz: '+R.n+'.)'}});
+  const g=shuf(GOOD),b=shuf(BAD);
+  const triage={z:'Cartaz da turma',t:'Bom colega ou não?',f:'Arrasta cada atitude para o sítio certo.',k:'match',c:'#0f766e',e:'✅',A:'Atitudes',B:'Onde fica?',
+    items:[...g.slice(0,3).map(t=>[t,'g']),...b.slice(0,3).map(t=>[t,'b'])],targets:[['✅ Bom colega',['g']],['❌ Tenho de melhorar',['b']]]};
+  const judge={z:'Recreio',t:'Bom exemplo ou mau exemplo?',f:'Lê cada atitude e decide se é de um bom colega.',k:'judge',c:'#e395c0',e:'👍',lab:['👍 Bom colega','👎 Mau exemplo'],
+    s:shuf([...g.slice(3,6).map(t=>[t,1]),...b.slice(3,6).map(t=>[t,0])])};
+  const order={z:'O teu dia na escola',t:'Ordena o dia de um bom colega',f:'Clica nos passos pela ordem certa, desde que chegas à escola!',k:'order',c:'#0bc1e0',e:'📅',
+    steps:['Chegar a horas à escola','Cumprimentar os colegas e a professora','Preparar o material da aula','Levantar a mão para falar','Deitar o lixo no caixote antes de sair'],
+    d:'Chegas a horas, cumprimentas, preparas o material, participas e deixas tudo limpo.'};
+  M=[...Q.slice(0,4),triage,...Q.slice(4,8),judge,...Q.slice(8),order];
+}
+
+/* ===== Motores ===== */
+const next=$('next');
+function panel(t){const p=el('div','panel');p.append(el('div','pt',t));const r=el('div','row');p.append(r);p.r=r;return p}
+const ENG={
+ match(m,box,done){
+  let sel=null,left=m.items.length;const A=panel(m.A),B=panel(m.B),cols=el('div','cols');B.classList.add('sticky');
+  const clr=()=>box.querySelectorAll('.it').forEach(x=>x.classList.remove('selected'));
+  const offOver=()=>box.querySelectorAll('.tgt').forEach(x=>x.classList.remove('over'));
+  const under=e=>{const x=document.elementFromPoint(e.clientX,e.clientY);return x&&x.closest('.tgt')};
+  const place=(t,b,tb)=>{if(tb.ok.includes(t)){right();const c=el('span','chip',b.textContent);tb.querySelector('.in').append(c);b.remove();if(!--left)done()}else{wrong();flash(tb,'wrong')}};
+  m.targets.forEach(([l,ok_])=>{const b=el('button','tag tgt');b.append(el('span','lab',l),el('div','in'));b.ok=ok_;b.onclick=()=>{
+    if(!sel){fb('Arrasta um cartão para aqui.','err');return}
+    place(sel.t,sel.b,b);sel=null;clr()};B.r.append(b)});
+  shuf(m.items).forEach(([l,t])=>{const b=el('button','tag it',l);let st=null,g=null,moved=false;
+    b.onclick=()=>{if(moved||b.classList.contains('disabled'))return;clr();b.classList.add('selected');sel={t,b};fb('')};
+    b.onpointerdown=e=>{if(b.classList.contains('disabled'))return;st={x:e.clientX,y:e.clientY};moved=false;b.setPointerCapture(e.pointerId)};
+    b.onpointermove=e=>{if(!st)return;
+      if(!g&&Math.hypot(e.clientX-st.x,e.clientY-st.y)>8){moved=true;g=b.cloneNode(true);g.className='tag ghost';document.body.append(g);b.classList.add('dragging');clr();sel=null}
+      if(g){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';offOver();const tb=under(e);if(tb)tb.classList.add('over')}};
+    const end=e=>{if(!st)return;st=null;if(g){const tb=e.type==='pointerup'?under(e):null;g.remove();g=null;b.classList.remove('dragging');offOver();if(tb)place(t,b,tb);setTimeout(()=>moved=false,60)}};
+    b.onpointerup=end;b.onpointercancel=end;A.r.append(b)});
+  cols.append(A,B);box.append(cols)},
+ order(m,box,done){let i=0;const p=panel('Clica pela ordem certa:');
+  shuf(m.steps.map((t,k)=>[t,k])).forEach(([t,k])=>{const b=el('button','tag',t);b.onclick=()=>{if(b.classList.contains('disabled'))return;
+    if(k===i){right();b.classList.add('correct','disabled');b.textContent=(i+1)+'. '+t;if(++i===m.steps.length)done()}else{wrong(m.d);flash(b,'wrong')}};p.r.append(b)});
+  box.append(p)},
+ single(m,box,done){
+  const p=panel('');let fin=false;
+  shuf(m.o).forEach(([l,c])=>{const b=el('button','tag',l);b.onclick=()=>{if(fin)return;
+    if(c){fin=true;right(m.d);b.classList.add('correct');p.querySelectorAll('.tag').forEach(x=>x.classList.add('disabled'));done()}
+    else{wrong(m.d);flash(b,'wrong')}};p.r.append(b)});
+  box.append(p)},
+ judge(m,box,done){
+  let n=0;const p=el('div','panel');
+  m.s.forEach(([txt,safe],i)=>{const d=el('div','stmt'),r=el('div','row');d.append(el('div','',(i+1)+'. '+txt));
+    const LB=m.lab||['Seguro','Perigoso'];const bs=[[LB[0],1],[LB[1],0]].map(([l,v])=>{const b=el('button','tag',l);b.onclick=()=>{
+      if(bs[0].classList.contains('disabled'))return;
+      if(v===safe){right();b.classList.add('correct')}else{wrong();b.classList.add('wrong')}
+      bs.forEach(x=>x.classList.add('disabled'));if(++n===m.s.length)done()};r.append(b);return b});
+    d.append(r);p.append(d)});
+  box.append(p)},
+ pick(m,box,done){
+  let n=0;const tot=m.p.filter(x=>x[1]).length,g=el('div','grid');
+  shuf(m.p).forEach(([l,safe])=>{const b=el('button','tag',l);b.onclick=()=>{if(b.classList.contains('correct'))return;
+    if(safe){b.classList.add('correct');right();if(++n===tot)done()}else{wrong('Isso é perigoso! Cuidado.');flash(b,'wrong')}};g.append(b)});
+  box.append(g)}
+};
+
+function start(i){
+  cur=i;const mi=SEQ[i],m=Object.assign({},M[mi]);curM=m;
+  const bs=document.body;bs.className='s'+(mi%8);
+  if(m.c){const h=m.c.slice(1),L=(parseInt(h.slice(0,2),16)*299+parseInt(h.slice(2,4),16)*587+parseInt(h.slice(4,6),16)*114)/1000;
+    bs.style.setProperty('--acc',m.c);bs.style.setProperty('--acct',L<140?'#fff':'#1e1b4b')}
+  else{bs.style.removeProperty('--acc');bs.style.removeProperty('--acct')}
+  $('prog').textContent=(train?'Treino ':'Missão ')+`${i+1} de ${SEQ.length}`;trail();
+  $('zone').textContent=m.z;$('title').textContent=`Missão ${mi+1} – ${m.t}`;$('fala').textContent=m.f;
+  $('mission').replaceWith(Object.assign(el('div'),{id:'mission'}));
+  fb('');next.style.display='none';$('again').style.display=$('dip').style.display=$('train').style.display='none';
+  ENG[m.k](m,$('mission'),()=>{clearInterval(tmr);$('tm').style.display='none';
+    next.textContent=i===SEQ.length-1?'Ver resultado final →':'Próxima missão →';next.style.display='inline-block';
+    const er=errs[mi]||0,n=er===0?3:er<=2?2:1;starsOf[mi]=n;$('fb').textContent+=' · '+'🌟'.repeat(n)+'☆'.repeat(3-n)});
+  timer();say(m.f)}
+
+next.onclick=()=>{clearInterval(tmr);beep(SND.next);cur+1<SEQ.length?start(cur+1):final()};
+$('dip').onclick=()=>{const d=el('div');d.id='dipl';
+  d.innerHTML=`<div class="dp"><div class="dpb">${MD[0]}</div><h2>Diploma de Bom Colega</h2><p>Certifica-se que</p><h1></h1><p>concluiu o jogo <b>Como ser um bom colega</b> e mostrou saber as regras da turma: respeito, ajuda, honestidade e responsabilidade.</p><p>⭐ ${pts} pontos · ${MD[1]} · ${new Date().toLocaleDateString('pt-PT')}</p><p class="sig">© Prof.ª Vanda Várzea</p><div class="np"><button class="btn" id="pr">🖨️ Imprimir / Guardar PDF</button><button class="btn" id="cl">Fechar</button></div></div>`;
+  d.querySelector('h1').textContent=name;document.body.append(d);$('pr').onclick=()=>print();$('cl').onclick=()=>d.remove()};
+$('again').onclick=()=>{train=false;ok=bad=pts=streak=0;errs.length=0;RES={};Object.keys(starsOf).forEach(k=>delete starsOf[k]);build();SEQ=M.map((_,k)=>k);upd();start(0)};
+$('train').onclick=()=>{const todo=M.map((_,k)=>k).filter(k=>errs[k]);if(!todo.length)return;train=true;SEQ=todo;todo.forEach(k=>errs[k]=0);ok=bad=pts=streak=0;RES={};upd();start(0)};
+
+/* ===== Final ===== */
+function final(){
+  const bs=document.body;bs.className='sf';bs.style.removeProperty('--acc');bs.style.removeProperty('--acct');
+  next.style.display='none';clearInterval(tmr);$('tm').style.display='none';trail(true);
+  const left=M.map((_,k)=>k).filter(k=>errs[k]);
+  const lab=k=>M[k].r!=null?RULES[M[k].r].n:M[k].t;
+  const sl=k=>'🌟'.repeat(starsOf[k]||0)+'☆'.repeat(3-(starsOf[k]||0));
+  const rows=SEQ.map(k=>`<div class="sti"><span>${ico(k)} ${lab(k)}</span><span>${sl(k)}</span></div>`).join('');
+  const tot=SEQ.reduce((a,k)=>a+(starsOf[k]||0),0);
+  let e='🥉',t='Medalha de Bronze',x='Bom esforço! Estás a aprender e isso é fantástico.';
+  if(train){e='🎯';t='Treino concluído';x=left.length?'Quase lá! Ainda podes treinar o que falta.':'Já sabes tudo! Não erraste nenhuma.'}
+  else if(bad<=4){e='🥇';t='Medalha de Ouro';x='Excelente trabalho! És um ótimo colega!'}
+  else if(bad<=10){e='🥈';t='Medalha de Prata';x='Muito bem! Faltou só um bocadinho para o ouro.'}
+  $('prog').textContent=train?'Treino concluído':'Missões concluídas';
+  $('zone').textContent=train?'Treino':'Parabéns!';$('title').textContent='⭐ Parabéns, '+name+'! ⭐';
+  $('fala').textContent='Obrigado por jogares comigo! Juntos fazemos uma turma melhor.';
+  let best=0,rec=false;
+  if(!train){MD=[e,t];try{best=+localStorage.getItem('vbcolega')||0;if(pts>best){localStorage.setItem('vbcolega',pts);rec=best>0;best=pts}}catch(er){}}
+  const rv=[...new Set(left.map(lab))];
+  const ch=RULES.map((r,k)=>{const q=RES[k];return q?`<span class="chip2" style="background:${r.c};color:${r.dark?'#fff':'#1b1b1b'}">${r.e} ${r.n} ${q.ok===q.t?'✔':'↻'} ${q.ok}/${q.t}</span>`:''}).join('');
+  const m=$('mission');
+  m.innerHTML=`<div class="final"><div class="big">${e}</div><b>${t}</b><p>⭐ <b>${pts}</b> pontos${!train&&rec?' – novo recorde! 🏆':!train&&best?' (melhor: '+best+')':''}<br>✔ Certo: <b>${ok}</b> &nbsp; ✘ Errado: <b>${bad}</b></p><p>🌟 <b>${tot}</b> de ${SEQ.length*3} estrelas</p><div class="stl">${rows}</div><p>${x}</p>${rv.length?'<div class="rev"><b>Para rever:</b> '+rv.join(', ')+'</div>':'<p>Sem nenhum erro! 👏</p>'}<p><b>As regras do cartaz</b></p><div class="chips">${ch}</div>${train?'':'<p>Queres tentar outra vez e melhorar o resultado?</p>'}</div>`;
+  fb(train?'Treino concluído! 🎯':'Fantástico! És um bom colega! 🏆','ok');
+  $('again').style.display='inline-block';$('dip').style.display=train?'none':'inline-block';$('train').style.display=left.length?'inline-block':'none';
+  beep(SND.fim);say('Fantástico! Missão concluída!');robot('dance');
+  const cs=['#f97316','#22c55e','#3b82f6','#ec4899','#eab308'];
+  for(let i=0;i<80;i++){const c=el('div','confetti'),d=2+Math.random()*1.8;
+    c.style.cssText=`left:${Math.random()*100}vw;animation-duration:${d}s;background:${cs[i%5]}`;
+    document.body.append(c);setTimeout(()=>c.remove(),d*1000)}}
+
+function intro(){
+  document.body.className='s0';document.body.style.removeProperty('--acc');document.body.style.removeProperty('--acct');cur=-1;train=false;SEQ=[];trail();$('prog').textContent='Preparação';
+  $('zone').textContent='Escola';$('title').textContent="VanBerto's – Como ser um bom colega";
+  $('fala').textContent="Olá! Sou o VanBerto's. Como te chamas?";
+  $('mission').replaceWith(Object.assign(el('div'),{id:'mission'}));
+  const p=el('div','panel final'),i=el('input');i.id='pn';i.maxLength=20;i.placeholder='O teu nome';i.value=name;i.setAttribute('aria-label','O teu nome');
+  const b=el('button','btn','Começar a missão'),go=()=>{name=i.value.trim()||'Colega';RES={};build();SEQ=M.map((_,k)=>k);$('fname').textContent='👤 '+name;start(0)};
+  b.onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()};
+  const lv=el('div','row');[['f','😊 Fácil'],['n','🙂 Normal'],['d','⏱ Desafio']].forEach(([k,l])=>{const q=el('button','tag'+(lvl===k?' selected':''),l);q.onclick=()=>{lvl=k;lv.querySelectorAll('.tag').forEach(x=>x.classList.remove('selected'));q.classList.add('selected')};lv.append(q)});
+  p.append(el('p','','Vamos ver que bom colega tu és! São 14 desafios sobre as regras do cartaz da turma. Acerta em sequência para ganhares pontos extra!'),i,lv,el('p','lvh','Fácil mostra a regra do cartaz quando erras. Desafio tem 60 s por missão e pontos a dobrar.'),b);
+  $('mission').append(p);fb('');next.style.display='none';$('again').style.display=$('dip').style.display=$('train').style.display='none';bub("Olá! Sou o VanBerto's!");play([['wink',-1,true,900]])}
+/* ===== Pausa (tecla P), menu Mais, modo escuro e ecrã inteiro ===== */
+function pause(on){if(on===paused)return;paused=on;let o=$('pauseov');
+  if(on){o=el('div');o.id='pauseov';o.setAttribute('role','dialog');o.setAttribute('aria-label','Jogo em pausa');
+    const bx=el('div','pbox');bx.append(el('div','pbig','⏸️'),el('h2','','Jogo em pausa'),el('p','','Ouve a professora. Quando ela disser, carrega em continuar.'));
+    const b=el('button','btn','▶ Continuar');b.onclick=()=>pause(false);bx.append(b);o.append(bx);document.body.append(o);
+    if(window.speechSynthesis)speechSynthesis.cancel();b.focus()}
+  else if(o)o.remove()}
+$('pz').onclick=()=>pause(!paused);
+function goHome(){pause(false);clearInterval(tmr);$('tm').style.display='none';ok=bad=pts=streak=0;errs.length=0;Object.keys(starsOf).forEach(k=>delete starsOf[k]);upd();intro()}
+$('hm').onclick=()=>{if(cur<0||document.body.className==='sf'){goHome();return}
+  if($('homeov'))return;const o=el('div');o.id='homeov';o.setAttribute('role','dialog');o.setAttribute('aria-label','Voltar ao início');
+  const bx=el('div','pbox');bx.append(el('div','pbig','🏠'),el('h2','','Voltar ao início?'),el('p','','Perdes o progresso desta partida. Podes mudar o nível no ecrã inicial.'));
+  const s=el('button','btn','Sim, voltar'),n=el('button','btn','Continuar a jogar');
+  s.onclick=()=>{o.remove();goHome()};n.onclick=()=>o.remove();bx.append(s,n);o.append(bx);document.body.append(o);n.focus()};
+addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='p'||e.key==='P')pause(!paused);else if(e.key==='Escape'){if(paused)pause(false);if($('homeov'))$('homeov').remove();$('mm').hidden=true;$('mb').setAttribute('aria-expanded','false')}});
+$('mb').onclick=e=>{e.stopPropagation();const m=$('mm');m.hidden=!m.hidden;$('mb').setAttribute('aria-expanded',String(!m.hidden))};
+document.addEventListener('click',e=>{const m=$('mm');if(!m.hidden&&!e.target.closest('#mw')){m.hidden=true;$('mb').setAttribute('aria-expanded','false')}});
+function dark(on){document.documentElement.classList.toggle('dark',on);$('dk').textContent=on?'☀️ Modo claro':'🌙 Modo escuro';try{localStorage.setItem('vbdark',on?'1':'0')}catch(e){}}
+$('dk').onclick=()=>dark(!document.documentElement.classList.contains('dark'));
+try{if(localStorage.getItem('vbdark')==='1')dark(true)}catch(e){}
+if(!document.documentElement.requestFullscreen)$('fs').style.display='none';
+$('fs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})};
+$('stripe').innerHTML=RULES.map(r=>'<i style="background:'+r.c+'"></i>').join('');
+upd();intro();
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
